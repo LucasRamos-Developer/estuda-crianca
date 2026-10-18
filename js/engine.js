@@ -287,7 +287,7 @@ const fresh = () => ({
   v: 1,
   created: Date.now(),
   profile: { name: '', year: 3 },
-  settings: { sound: true, goal: 30, unlockAll: false, pin: null },
+  settings: { sound: true, goal: 30, unlockAll: false },
   xp: 0,
   days: {},
   nodes: {},
@@ -311,24 +311,156 @@ function merge(base, data) {
   return base;
 }
 
-function load() {
-  try { return merge(fresh(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { return fresh(); }
+// Vários estudantes no mesmo aparelho: um índice (estuda-perfis) e um estado por estudante (estuda-perfil-<id>).
+// Tudo fica só no localStorage deste navegador.
+const INDEX = 'estuda-perfis';
+const pkey = (id) => `estuda-perfil-${id}`;
+export const MAX_PROFILES = 8;
+const readJson = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
+const writeJson = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
+
+let index = readJson(INDEX);
+// Migração: o progresso antigo (tabuada-v1) vira o 1º estudante. A chave antiga fica como cópia de segurança.
+if (!index || !Array.isArray(index.order)) {
+  index = { v: 1, active: null, order: [], pin: null, next: 1 };
+  const old = readJson(KEY);
+  if (old && old.profile && old.profile.name) {
+    const st = merge(fresh(), old);
+    index.pin = st.settings.pin || null;
+    delete st.settings.pin;
+    writeJson(pkey('p1'), st);
+    index.order = ['p1'];
+    index.active = 'p1';
+    index.next = 2;
+  }
+  writeJson(INDEX, index);
+}
+const saveIndex = () => writeJson(INDEX, index);
+
+function load(id = index.active) {
+  const data = id ? readJson(pkey(id)) : null;
+  const st = merge(fresh(), data || {});
+  delete st.settings.pin;
+  return st;
 }
 export let state = load();
 export function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* armazenamento cheio/bloqueado */ }
+  if (!index.active) {
+    // Primeiro acesso: o estudante é criado quando o nome é preenchido
+    if (!state.profile.name) return;
+    const id = `p${index.next++}`;
+    index.order.push(id);
+    index.active = id;
+    saveIndex();
+  }
+  state.seen = Date.now();
+  writeJson(pkey(index.active), state);
 }
 export function resetAll(keepProfile = true) {
-  const keep = keepProfile ? { profile: state.profile, settings: state.settings } : {};
+  const keep = keepProfile ? { profile: state.profile, settings: state.settings, created: state.created } : {};
   state = merge(fresh(), keep);
   save();
 }
-export function importData(obj) {
-  if (!obj || typeof obj !== 'object' || obj.v !== 1 || !obj.profile) throw new Error('Arquivo inválido');
-  state = merge(fresh(), obj);
+
+// ---------- Estudantes deste aparelho ----------
+export const activeId = () => index.active;
+export function profiles() {
+  return index.order.map((id) => {
+    const st = id === index.active ? state : load(id);
+    const days = st.days || {};
+    let streak = 0;
+    const d = new Date();
+    if (!(days[dayKey(d)]?.xp > 0)) d.setDate(d.getDate() - 1);
+    while (days[dayKey(d)]?.xp > 0) { streak++; d.setDate(d.getDate() - 1); }
+    return { id, name: st.profile.name, year: st.profile.year, xp: st.xp, streak, seen: st.seen || st.created, created: st.created };
+  });
+}
+export function switchProfile(id) {
+  if (!index.order.includes(id)) return false;
+  if (index.active) save();
+  index.active = id;
+  saveIndex();
+  state = load(id);
+  return true;
+}
+// Prepara um estudante novo; ele é gravado quando o nome for preenchido (save)
+export function newProfile() {
+  if (index.order.length >= MAX_PROFILES) return false;
+  if (index.active) save();
+  index.active = null;
+  state = fresh();
+  return true;
+}
+// Volta para quem estava estudando (ao cancelar "Adicionar estudante")
+export function cancelNewProfile(id) {
+  if (!index.active && id) switchProfile(id);
+}
+export function deleteProfile(id) {
+  const i = index.order.indexOf(id);
+  if (i < 0) return;
+  index.order.splice(i, 1);
+  try { localStorage.removeItem(pkey(id)); localStorage.removeItem(`estuda-ui-${id}`); } catch { /* sem armazenamento */ }
+  if (index.active === id) {
+    index.active = index.order[Math.min(i, index.order.length - 1)] || null;
+    state = load(index.active);
+  }
+  saveIndex();
+}
+export const getPin = () => index.pin;
+export function setPin(pin) { index.pin = pin; saveIndex(); }
+
+// ---------- Backup ----------
+const validState = (o) => o && typeof o === 'object' && o.v === 1 && o.profile && typeof o.profile.name === 'string';
+// Backup antigo (um estudante) ou de todos ({ tipo: "todos", perfis: [...] })
+export function backupInfo(obj) {
+  if (obj && obj.tipo === 'todos' && Array.isArray(obj.perfis)) return { all: true, count: obj.perfis.filter(validState).length };
+  if (validState(obj)) return { all: false, name: obj.profile.name };
+  return null;
+}
+function addProfile(st) {
+  if (index.order.length >= MAX_PROFILES) return false;
+  const id = `p${index.next++}`;
+  writeJson(pkey(id), st);
+  index.order.push(id);
+  return id;
+}
+// modo: "novo" (adiciona como outro estudante) ou "substituir" (troca o progresso do estudante atual)
+export function importData(obj, modo = 'substituir') {
+  const info = backupInfo(obj);
+  if (!info) throw new Error('Arquivo inválido');
+  const clean = (o) => { const st = merge(fresh(), o); delete st.settings.pin; return st; };
+  if (info.all) {
+    let added = 0;
+    for (const o of obj.perfis.filter(validState)) {
+      const st = clean(o);
+      // Mesmo estudante (mesma criação e mesmo nome): substitui; senão entra como novo
+      const same = index.order.find((id) => { const x = id === index.active ? state : load(id); return x.created === st.created && x.profile.name === st.profile.name; });
+      if (same) { writeJson(pkey(same), st); if (same === index.active) state = st; }
+      else if (addProfile(st)) added++;
+    }
+    if (!index.active && index.order.length) { index.active = index.order[0]; state = load(index.active); }
+    saveIndex();
+    return { added };
+  }
+  const st = clean(obj);
+  if (modo === 'novo' || !index.active) {
+    if (index.active) save();
+    const id = addProfile(st);
+    if (!id) throw new Error('Limite de estudantes');
+    index.active = id;
+    saveIndex();
+    state = st;
+    return { added: 1 };
+  }
+  state = st;
   save();
+  return { added: 0 };
 }
 export function exportData() { return JSON.stringify(state, null, 1); }
+export function exportAll() {
+  if (index.active) save();
+  return JSON.stringify({ v: 1, tipo: 'todos', criado: Date.now(), perfis: index.order.map((id) => load(id)) }, null, 1);
+}
 
 // ---------- Estatísticas ----------
 export const stars = (id) => state.nodes[id]?.stars || 0;

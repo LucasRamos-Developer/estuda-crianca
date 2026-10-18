@@ -18,6 +18,8 @@ curiosidades. Visual inspirado no Duolingo, simples e sem anúncios.
 ## Privacidade: nenhuma informação é coletada
 
 - **O progresso fica salvo só no aparelho**, no armazenamento local do navegador. Nada vai para servidor nenhum.
+- **Vários estudantes no mesmo navegador:** irmãos ou colegas podem usar o mesmo celular ou computador, cada um com o seu
+  progresso separado (até 8 estudantes por aparelho).
 - **O app não captura nenhuma informação:** não tem conta, login, cookies, anúncios, rastreamento nem estatísticas de uso.
   O nome da criança, o ano escolar, o PIN dos pais e todo o histórico ficam só no aparelho.
 - O app só baixa os próprios arquivos (telas, lições e jogos) do site onde está publicado. Como em qualquer site, o
@@ -30,10 +32,14 @@ curiosidades. Visual inspirado no Duolingo, simples e sem anúncios.
 ## O progresso é por aparelho
 
 - Cada aparelho e cada navegador têm o seu próprio progresso. Estudar no celular não aparece no computador.
+- No mesmo aparelho, **cada estudante tem o seu progresso**. Ao abrir o app com dois ou mais estudantes, aparece
+  "Quem vai estudar?". Para trocar depois, toque no avatar no topo da tela (ou em *Configurações → Estudantes*).
 - Limpar os dados do navegador ou desinstalar o app **apaga o progresso** daquele aparelho.
 - **Para levar o progresso para outro lugar, exporte:**
-  1. No aparelho de origem: *Configurações → Área dos pais → Exportar backup*. Isso gera um arquivo `.json`.
-  2. No outro aparelho: *Configurações → Área dos pais → Importar backup* e escolha o arquivo.
+  1. No aparelho de origem: *Configurações → Área dos pais → Exportar backup* (de um estudante) ou
+     *Exportar todos os estudantes*. Isso gera um arquivo `.json`.
+  2. No outro aparelho: *Configurações → Área dos pais → Importar backup* e escolha o arquivo. O backup de um estudante
+     pode entrar como **novo estudante** ou **substituir** o progresso de quem está estudando.
 - Também dá para fazer o backup só para guardar uma cópia. O relatório em **PDF** (*imprimir / salvar em PDF*) serve para
   mostrar o desempenho à escola ou à família.
 
@@ -41,6 +47,8 @@ curiosidades. Visual inspirado no Duolingo, simples e sem anúncios.
 
 - No primeiro acesso, a criança informa o **nome** e o **ano escolar**, e as trilhas são montadas para esse ano
   (dá para trocar depois em *Configurações*).
+- **Estudantes:** pelo avatar no topo dá para trocar de estudante ou adicionar outro. Cada um tem nome, ano, trilhas,
+  estrelas, XP, sequência, jogos e simulados próprios. Remover um estudante só é possível na Área dos pais, com o PIN.
 - **Menu:**
   - Matemática (abas Trilha, Tabuada e Jogos)
   - Português (abas Trilha e Jogos)
@@ -65,26 +73,13 @@ curiosidades. Visual inspirado no Duolingo, simples e sem anúncios.
 - **Desafios de contas:** perguntas, 1 minuto ou 3 vidas, além do desafio do dia, da revisão surpresa, do teste de
   progresso e do treino dos erros.
 - **Curiosidades:** a cada versão nova, entra pelo menos uma curiosidade nova em cada matéria, e as antigas continuam.
-- **Área dos pais** (protegida por um PIN criado no primeiro acesso a ela): progresso por matéria, habilidades da BNCC, simulados, jogos,
-  relatório em PDF e em texto, backup e configurações.
+- **Área dos pais** (protegida por um PIN do aparelho, criado no primeiro acesso a ela): progresso por matéria,
+  habilidades da BNCC, simulados, jogos, relatório em PDF e em texto, estudantes deste aparelho, backup e configurações.
 
 ## Próximas funcionalidades
 
-### Vários estudantes no mesmo navegador
-
-Hoje cada navegador guarda um estudante só. A próxima funcionalidade é poder **trocar de usuário no mesmo aparelho**,
-para irmãos ou colegas usarem o mesmo celular ou computador, **cada um com seu progresso separado**:
-
-- Tela "Quem vai estudar?" ao abrir o app, com o nome e a inicial de cada estudante, e um botão para adicionar outro.
-- Cada estudante tem nome, ano escolar, trilhas, estrelas, XP, sequência de dias, jogos e simulados próprios.
-- Troca rápida pelo avatar no topo da tela, sem perder o progresso de ninguém.
-- A Área dos pais mostra o relatório de cada estudante. O PIN dos pais vale para o aparelho todo.
-- Backup de um estudante ou de todos de uma vez. O backup que existe hoje vira o primeiro estudante, sem perder nada.
-- Tudo continua só no aparelho, sem conta e sem servidor.
-
-### Outras
-
 - Conteúdo escrito, jogos e simulados dos outros anos, começando pelo 4º (veja o [roadmap](roadmap/README.md)).
+- Terminar a trilha escrita do 3º ano (Português e Arte são os que mais faltam).
 - Novos jogos: relógio (horas), caça-sílabas, ditado de frases, estados do Brasil no mapa.
 
 ## Roadmap
@@ -110,7 +105,7 @@ Um push na `main` faz o GitHub Pages publicar sozinho. Antes de publicar (regras
 
 1. Acrescente pelo menos **uma curiosidade nova por matéria** em `data/curiosidades.json`, sem apagar as existentes.
 2. Rode `node tools/validar-conteudo.mjs --publicar`.
-3. Se mudou HTML, CSS, JS ou ícones, aumente a versão do cache em `sw.js` (`estuda-v11` → `estuda-v12`). Senão os
+3. Se mudou HTML, CSS, JS ou ícones, aumente a versão do cache em `sw.js` (`estuda-v12` → `estuda-v13`). Senão os
    aparelhos continuam com a versão antiga.
 
 ### Atualizar o conteúdo (JSON)
@@ -164,7 +159,7 @@ index.html, manifest.webmanifest, sw.js, serve.sh
 css/style.css          visual (celular, tablet e computador)
 js/app.js              telas e interação
 js/curriculum.js       monta as trilhas por ano e matéria
-js/engine.js           contas geradas, progresso (salvo no aparelho), conquistas
+js/engine.js           contas geradas, progresso por estudante (salvo no aparelho), conquistas
 js/games.js            jogos das matérias (soletrar, linha do tempo, mapa, memória...)
 js/icons.js, js/fx.js  ícones e sons
 data/                  conteúdo em JSON (BNCC, curiosidades, trilhas, jogos e simulados por ano)

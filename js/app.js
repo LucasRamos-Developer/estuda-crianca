@@ -48,10 +48,18 @@ const PANES = {
 ui.pane = { ma: 'trail', lp: 'trail', geral: 'trail', ch: 'desafios' };
 ui.paneIdx = {};
 ui.anim = '';
-// Preferências só deste aparelho: qual unidade está aberta em cada trilha (acordeão)
-const UI_KEY = 'estuda-ui';
-ui.acc = (() => { try { return JSON.parse(localStorage.getItem(UI_KEY) || '{}').acc || {}; } catch { return {}; } })();
-const saveUi = () => { try { localStorage.setItem(UI_KEY, JSON.stringify({ acc: ui.acc })); } catch { /* sem armazenamento */ } };
+// Preferências de tela de cada estudante: qual unidade está aberta em cada trilha (acordeão)
+const uiKey = () => `estuda-ui-${E.activeId() || 'novo'}`;
+const loadUi = () => { try { return JSON.parse(localStorage.getItem(uiKey()) || '{}').acc || {}; } catch { return {}; } };
+ui.acc = loadUi();
+const saveUi = () => { try { localStorage.setItem(uiKey(), JSON.stringify({ acc: ui.acc })); } catch { /* sem armazenamento */ } };
+// Cor de cada estudante (pela posição na lista)
+const PROFILE_COLORS = ['blue', 'purple', 'orange', 'green', 'pink', 'teal', 'red', 'yellow'];
+const profileColor = (id) => PROFILE_COLORS[Math.max(0, E.profiles().findIndex((p) => p.id === id)) % PROFILE_COLORS.length];
+// "Quem vai estudar?" aparece uma vez por sessão do navegador
+const chose = () => { try { return !!sessionStorage.getItem('estuda-escolheu'); } catch { return false; } };
+const markChose = () => { try { sessionStorage.setItem('estuda-escolheu', '1'); } catch { /* sem armazenamento */ } };
+const initialOf = (name) => esc((name || '?').trim().charAt(0).toUpperCase());
 const paneKey = () => (ui.tab === 'challenges' ? 'ch' : ui.tab !== 'learn' ? null : ui.subj === 'ma' ? 'ma' : ui.subj === 'lp' ? 'lp' : 'geral');
 let session = null;
 let walk = null;
@@ -141,7 +149,7 @@ function keepTabsInView() {
 function topbar() {
   const on = E.todayXp() > 0;
   return `<header class="topbar">
-    <button class="avatar" data-a="tab" data-v="progress" aria-label="Meu progresso">${initial()}</button>
+    <button class="avatar c-${profileColor(E.activeId())}" data-a="who" aria-label="Trocar de estudante">${initial()}</button>
     <div class="chip streak ${on ? '' : 'off'}" title="Dias seguidos">${icon('flame', 22)}${E.streak()}</div>
     <div class="chip xp" title="XP de hoje / meta">${icon('bolt', 22)}${E.todayXp()}/${S().settings.goal}</div>
     <div class="chip stars" title="Estrelas">${icon('star', 22)}${E.totalStars()}</div>
@@ -708,6 +716,7 @@ function renderConfig() {
     <div class="year-pick">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => `<button class="${YEAR() === y ? 'on' : ''}" data-a="set-year" data-v="${y}">${y}º</button>`).join('')}</div>
   </div>
   <div class="cfg-list">
+    ${item('data-a="who"', 'users', 'green', 'Estudantes', E.profiles().length > 1 ? `${E.profiles().length} estudantes neste aparelho · trocar ou adicionar` : 'Trocar de estudante ou adicionar outro')}
     ${item('data-a="tab" data-v="progress"', 'chart', 'blue', 'Meu progresso', 'Estatísticas, matérias, tabuadas e conquistas')}
     ${item('data-a="tab" data-v="parents"', 'lock', 'purple', 'Área dos pais', 'Relatório, PDF, ano escolar, backup e PIN')}
     ${item('data-a="curio-all" data-v="all"', 'bulb', 'yellow', 'Curiosidades', 'Você sabia? Fatos curiosos de todas as matérias')}
@@ -799,9 +808,9 @@ const gridPicker = () => `<div class="seg wrap">${OPS.map((op) => `<button class
 // ---------- Pais ----------
 function renderParents() {
   const s = S();
-  if (!s.settings.pin || !ui.parentOk) {
-    if (!s.settings.pin && ui.pinStep !== 'confirm') ui.pinStep = 'new';
-    if (s.settings.pin) ui.pinStep = 'enter';
+  if (!E.getPin() || !ui.parentOk) {
+    if (!E.getPin() && ui.pinStep !== 'confirm') ui.pinStep = 'new';
+    if (E.getPin()) ui.pinStep = 'enter';
     const title = { new: 'Crie um PIN de 4 números', confirm: 'Repita o PIN', enter: 'Área dos pais' }[ui.pinStep];
     const sub = { new: 'Primeiro acesso: escolha 4 números que só o adulto saiba. Ele protege a área dos pais.', confirm: 'Digite o mesmo PIN de novo para confirmar.', enter: 'Digite o PIN que você criou no primeiro acesso.' }[ui.pinStep];
     return `${backConfig()}<div class="pin-box">
@@ -903,13 +912,23 @@ function parentReport() {
       </div>
     </div>
     <div>
+      <h2 class="section-title">Estudantes deste aparelho</h2>
+      <div class="box people">${E.profiles().map((p) => `<div class="person ${p.id === E.activeId() ? 'on' : ''}">
+        <span class="avatar sm c-${profileColor(p.id)}">${initialOf(p.name)}</span>
+        <div class="grow"><b>${esc(p.name)}</b><small>${p.year}º ano · ${p.xp} XP${p.seen ? ` · ${fmtDate(p.seen)}` : ''}</small></div>
+        ${p.id === E.activeId() ? '<span class="pill g">Estudando</span>' : `<button class="btn white sm" data-a="who-go" data-v="${p.id}">Abrir</button>`}
+        <button class="icon-btn danger" data-a="who-del" data-v="${p.id}" aria-label="Remover ${esc(p.name)}">${icon('trash', 20)}</button>
+      </div>`).join('')}
+        ${E.profiles().length < E.MAX_PROFILES ? `<button class="btn white" data-a="who-add">${icon('user-plus', 20)} Adicionar estudante</button>` : ''}
+      </div>
       <h2 class="section-title">Backup</h2>
       <p class="muted small" style="margin-bottom:10px">O progresso fica salvo só neste aparelho. Faça backup para não perder ou para passar para outro aparelho.</p>
       <div class="btn-col">
-        <button class="btn white" data-a="export">${icon('download', 20)} Exportar backup</button>
+        <button class="btn white" data-a="export">${icon('download', 20)} Exportar backup de ${esc(s.profile.name)}</button>
+        ${E.profiles().length > 1 ? `<button class="btn white" data-a="export-all">${icon('download', 20)} Exportar todos os estudantes</button>` : ''}
         <button class="btn white" data-a="import">${icon('upload', 20)} Importar backup</button>
         <button class="btn white" data-a="pin-change">${icon('key', 20)} Trocar PIN</button>
-        <button class="btn red" data-a="reset">${icon('trash', 20)} Zerar progresso</button>
+        <button class="btn red" data-a="reset">${icon('trash', 20)} Zerar progresso de ${esc(s.profile.name)}</button>
         <button class="btn ghost" data-a="parent-lock">${icon('lock', 20)} Sair da área dos pais</button>
       </div>
     </div>
@@ -1051,10 +1070,10 @@ function pinKey(k) {
     ui.pin = '';
     if (ui.pinStep === 'new') { ui.pinFirst = p; ui.pinStep = 'confirm'; }
     else if (ui.pinStep === 'confirm') {
-      if (p === ui.pinFirst) { S().settings.pin = p; E.save(); ui.parentOk = true; ui.pinStep = null; toast('PIN criado'); }
+      if (p === ui.pinFirst) { E.setPin(p); ui.parentOk = true; ui.pinStep = null; toast('PIN criado'); }
       else { ui.pinStep = 'new'; toast('Os PINs não batem. Tente de novo.'); vibrate(); }
     } else if (ui.pinStep === 'enter') {
-      if (p === S().settings.pin) { ui.parentOk = true; ui.pinStep = null; }
+      if (p === E.getPin()) { ui.parentOk = true; ui.pinStep = null; }
       else { toast('PIN errado'); vibrate(); sfx.wrong(); }
     }
   }
@@ -1396,8 +1415,8 @@ function renderOnboarding() {
   $ov.innerHTML = `<div class="screen"><div class="inner">
     <div class="onb">
       <div class="logo">${[['blue', 'book'], ['green', 'pencil'], ['teal', 'flask'], ['purple', 'globe']].map(([c, ic]) => `<span class="c-${c}">${icon(ic, 30)}</span>`).join('')}</div>
-      <h1>Estuda Criança</h1>
-      <p class="muted big-p">Estudos do ensino fundamental, com o que se aprende nas escolas de Joinville.</p>
+      <h1>${ui.onbPrev ? 'Novo estudante' : 'Estuda Criança'}</h1>
+      <p class="muted big-p">${ui.onbPrev ? 'Cada estudante tem o seu próprio progresso neste aparelho.' : 'Estudos do ensino fundamental, com o que se aprende nas escolas de Joinville.'}</p>
       <label class="field"><span>Qual é o seu nome?</span>
         <input class="text-input" id="onbName" maxlength="20" placeholder="Seu nome" value="${esc(ui.onbName)}" autocomplete="off"></label>
       <div class="field"><span>Em que ano você está?</span>
@@ -1405,13 +1424,100 @@ function renderOnboarding() {
       <div class="field"><span>Meta por dia</span>
         <div class="seg">${[[10, 'Leve'], [20, 'Normal'], [30, 'Puxada'], [50, 'Intensa']].map(([g, l]) => `<button class="${ui.onbGoal === g ? 'on' : ''}" data-a="onb-goal" data-v="${g}">${l}<small>${g} XP</small></button>`).join('')}</div></div>
     </div>
-    <div class="result-foot"><button class="btn" data-a="onb-done" id="onbBtn" ${ui.onbName.trim() ? '' : 'disabled'}>Começar</button></div>
+    <div class="result-foot">${ui.onbPrev ? '<button class="btn ghost" data-a="onb-back">Voltar</button>' : ''}<button class="btn" data-a="onb-done" id="onbBtn" ${ui.onbName.trim() ? '' : 'disabled'}>Começar</button></div>
   </div></div>`;
   const inp = document.getElementById('onbName');
   inp.addEventListener('input', () => {
     ui.onbName = inp.value;
     document.getElementById('onbBtn').disabled = !inp.value.trim();
   });
+}
+
+// ---------- Estudantes ----------
+// Volta a tela para o começo (usado ao trocar de estudante)
+function resetView() {
+  ui.tab = 'learn'; ui.subj = 'ma'; ui.pop = null;
+  ui.pane = { ma: 'trail', lp: 'trail', geral: 'trail', ch: 'desafios' };
+  ui.paneIdx = {};
+  ui.parentOk = false; ui.pin = ''; ui.pinStep = null;
+  ui.curio = {};
+  ui.acc = loadUi();
+}
+function afterSwitch(msg) {
+  closeModal();
+  $ov.innerHTML = '';
+  document.body.classList.remove('lock');
+  markChose();
+  resetView();
+  ui.anim = 'page';
+  C.loadYear(YEAR()).then(() => { render(); scrollTo(0, 0); if (msg) toast(msg); });
+}
+function switchTo(id) {
+  if (id === E.activeId()) { closeModal(); if ($ov.querySelector('.who')) { $ov.innerHTML = ''; document.body.classList.remove('lock'); render(); } return; }
+  if (!E.switchProfile(id)) return;
+  sfx.tap();
+  vibrate(8);
+  afterSwitch(`Olá, ${S().profile.name}!`);
+}
+function addStudent() {
+  closeModal();
+  const prev = E.activeId();
+  if (!E.newProfile()) { toast(`Limite de ${E.MAX_PROFILES} estudantes neste aparelho`); return; }
+  ui.onbPrev = prev;
+  ui.onbName = ''; ui.onbYear = 3; ui.onbGoal = 20;
+  resetView();
+  sfx.tap();
+  render();
+}
+function askRemove(id) {
+  // Remover apaga o progresso: só com a Área dos pais desbloqueada pelo PIN
+  if (!ui.parentOk) { toast('Abra a Área dos pais com o PIN para remover'); return; }
+  const p = E.profiles().find((x) => x.id === id);
+  if (!p) return;
+  showModal(`<h2>Remover ${esc(p.name)}?</h2>
+    <p>Todo o progresso de ${esc(p.name)} neste aparelho será apagado: estrelas, XP, jogos, simulados e histórico. Isso não pode ser desfeito.</p>
+    <p class="muted small">Dica: exporte o backup antes, se quiser guardar.</p>
+    <button class="btn red" data-a="who-del-confirm" data-v="${id}">Sim, remover</button>
+    <button class="btn ghost" data-a="modal-close">Cancelar</button>`);
+}
+function removeStudent(id) {
+  if (!ui.parentOk) return;
+  const wasActive = id === E.activeId();
+  const name = E.profiles().find((x) => x.id === id)?.name || '';
+  E.deleteProfile(id);
+  closeModal();
+  if (!E.activeId()) { resetView(); render(); toast('Estudante removido'); return; }
+  if (wasActive) { afterSwitch(`${name} foi removido(a)`); return; }
+  toast(`${name} foi removido(a)`);
+  render();
+}
+// Folha do avatar: quem está estudando, trocar, adicionar
+function openWho() {
+  const list = E.profiles();
+  const cur = E.activeId();
+  sfx.tap();
+  showModal(`<h2>Quem está estudando</h2>
+    <div class="who-list">${list.map((p) => `<button class="who-row ${p.id === cur ? 'on' : ''}" data-a="who-go" data-v="${p.id}">
+      <span class="avatar c-${profileColor(p.id)}">${initialOf(p.name)}</span>
+      <span class="grow"><b>${esc(p.name)}</b><small>${p.year}º ano · ${p.streak} ${p.streak === 1 ? 'dia seguido' : 'dias seguidos'} · ${p.xp} XP</small></span>
+      ${p.id === cur ? `<span class="pill g">Agora</span>` : icon('right', 20)}</button>`).join('')}</div>
+    ${list.length < E.MAX_PROFILES ? `<button class="btn white" data-a="who-add">${icon('user-plus', 20)} Adicionar estudante</button>` : ''}
+    <button class="btn white" data-a="tab" data-v="progress">${icon('chart', 20)} Meu progresso</button>
+    <button class="btn ghost" data-a="modal-close">Fechar</button>`);
+}
+// Tela "Quem vai estudar?" (ao abrir o app com 2 ou mais estudantes)
+function renderWho() {
+  const list = E.profiles();
+  document.body.classList.add('lock');
+  $ov.innerHTML = `<div class="screen"><div class="inner who">
+    <div class="who-head"><h1>Quem vai estudar?</h1><p class="muted big-p">Cada um tem o seu progresso.</p></div>
+    <div class="who-grid">${list.map((p, i) => `<button class="who-card" style="--d:${i * 50}ms" data-a="who-go" data-v="${p.id}">
+      <span class="avatar xl c-${profileColor(p.id)}">${initialOf(p.name)}</span>
+      <b>${esc(p.name)}</b><small>${p.year}º ano</small>
+      <span class="who-meta">${icon('flame', 16)} ${p.streak} · ${icon('bolt', 16)} ${p.xp}</span></button>`).join('')}
+      ${list.length < E.MAX_PROFILES ? `<button class="who-card add" style="--d:${list.length * 50}ms" data-a="who-add"><span class="avatar xl">${icon('user-plus', 34)}</span><b>Adicionar</b><small>novo estudante</small></button>` : ''}
+    </div>
+  </div></div>`;
 }
 
 // ---------- Modal / toast ----------
@@ -1437,12 +1543,13 @@ function factDetail(key) {
   toast(`${label}: ${f.c} acerto(s), ${f.w} erro(s), ${(f.t / 1000).toFixed(1)}s em média`);
 }
 
-function exportBackup() {
-  const blob = new Blob([E.exportData()], { type: 'application/json' });
+function exportBackup(all = false) {
+  const blob = new Blob([all ? E.exportAll() : E.exportData()], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `estuda-crianca-backup-${(S().profile.name || 'crianca').toLowerCase().replace(/[^a-z0-9]+/gi, '-')}-${E.dayKey()}.json`;
+  const who = all ? 'todos' : (S().profile.name || 'crianca').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/gi, '-');
+  a.download = `estuda-crianca-backup-${who}-${E.dayKey()}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -1547,7 +1654,7 @@ document.addEventListener('click', (ev) => {
   switch (a) {
     case 'tab':
       if (v === 'table') { ui.tab = 'learn'; ui.subj = 'ma'; if (ui.pane.ma === 'table') render(); else setPane('ma', 'table'); break; }
-      stopSpeak(); ui.anim = ui.tab === v ? '' : 'page'; ui.tab = v; ui.pop = null;
+      stopSpeak(); closeModal(); ui.anim = ui.tab === v ? '' : 'page'; ui.tab = v; ui.pop = null;
       if (v !== 'parents') { ui.parentOk = false; ui.pin = ''; }
       sfx.tap(); render(); scrollTo(0, 0); break;
     case 'node': ui.pop = ui.pop === v ? null : v; sfx.tap(); render(); break;
@@ -1621,11 +1728,11 @@ document.addEventListener('click', (ev) => {
     case 'pin-forgot': forgotPin(); break;
     case 'forgot-check': {
       const val = document.getElementById('forgotInput').value.trim();
-      if (Number(val) === Number(v)) { S().settings.pin = null; E.save(); ui.pinStep = 'new'; closeModal(); toast('Crie um novo PIN'); render(); }
+      if (Number(val) === Number(v)) { E.setPin(null); ui.pinStep = 'new'; closeModal(); toast('Crie um novo PIN'); render(); }
       else toast('Resposta errada');
       break;
     }
-    case 'pin-change': S().settings.pin = null; E.save(); ui.parentOk = false; ui.pinStep = 'new'; render(); scrollTo(0, 0); break;
+    case 'pin-change': E.setPin(null); ui.parentOk = false; ui.pinStep = 'new'; render(); scrollTo(0, 0); break;
     case 'parent-lock': ui.parentOk = false; ui.tab = 'config'; render(); break;
     case 'goal': S().settings.goal = Number(v); E.save(); render(); break;
     case 'toggle': S().settings[v] = !S().settings[v]; E.save(); render(); break;
@@ -1633,9 +1740,24 @@ document.addEventListener('click', (ev) => {
     case 'share-native': navigator.share({ title: 'Relatório - Estuda Criança', text: reportText() }).catch(() => {}); break;
     case 'share-copy': navigator.clipboard?.writeText(reportText()).then(() => toast('Relatório copiado'), () => toast('Não foi possível copiar')); break;
     case 'export': exportBackup(); break;
+    case 'export-all': exportBackup(true); break;
+    case 'import-go': {
+      const obj = ui.pendingImport;
+      ui.pendingImport = null;
+      closeModal();
+      if (!obj) break;
+      try { E.importData(obj, v); afterSwitch(v === 'novo' ? `${S().profile.name} foi adicionado(a)` : 'Backup importado'); } catch { toast('Não foi possível importar'); }
+      break;
+    }
+    case 'who': openWho(); break;
+    case 'who-go': switchTo(v); break;
+    case 'who-add': addStudent(); break;
+    case 'who-del': askRemove(v); break;
+    case 'who-del-confirm': removeStudent(v); break;
+    case 'onb-back': closeModal(); E.cancelNewProfile(ui.onbPrev); ui.onbPrev = null; $ov.innerHTML = ''; ui.acc = loadUi(); render(); break;
     case 'import': document.getElementById('importFile').click(); break;
     case 'reset':
-      showModal(`<h2>Zerar todo o progresso?</h2><p>Estrelas, XP, sequência e histórico serão apagados. Isso não pode ser desfeito.</p>
+      showModal(`<h2>Zerar o progresso de ${esc(S().profile.name)}?</h2><p>Estrelas, XP, sequência e histórico de ${esc(S().profile.name)} serão apagados. Os outros estudantes não mudam. Isso não pode ser desfeito.</p>
         <button class="btn red" data-a="reset-confirm">Sim, zerar tudo</button><button class="btn ghost" data-a="modal-close">Cancelar</button>`);
       break;
     case 'reset-confirm': E.resetAll(true); closeModal(); toast('Progresso zerado'); render(); break;
@@ -1653,8 +1775,12 @@ document.addEventListener('click', (ev) => {
       st.profile.year = ui.onbYear;
       st.created = Date.now();
       E.save();
+      ui.onbPrev = null;
+      ui.onbName = '';
+      markChose();
       $ov.innerHTML = '';
       sfx.complete();
+      resetView();
       C.loadYear(st.profile.year).then(render);
       break;
     }
@@ -1676,7 +1802,22 @@ document.addEventListener('change', (ev) => {
     const file = ev.target.files[0];
     if (!file) return;
     file.text().then((txt) => {
-      try { E.importData(JSON.parse(txt)); toast('Backup importado'); render(); } catch { toast('Arquivo de backup inválido'); }
+      let obj = null;
+      try { obj = JSON.parse(txt); } catch { /* inválido */ }
+      const info = E.backupInfo(obj);
+      ev.target.value = '';
+      if (!info) { toast('Arquivo de backup inválido'); return; }
+      if (info.all) {
+        const r = E.importData(obj);
+        afterSwitch(`Backup importado${r.added ? ` · ${r.added} ${r.added === 1 ? 'estudante novo' : 'estudantes novos'}` : ''}`);
+        return;
+      }
+      ui.pendingImport = obj;
+      showModal(`<h2>Importar o backup de ${esc(info.name)}</h2>
+        <p>Como você quer usar este backup?</p>
+        ${E.profiles().length < E.MAX_PROFILES ? `<button class="btn" data-a="import-go" data-v="novo">${icon('user-plus', 20)} Adicionar como novo estudante</button>` : ''}
+        <button class="btn white" data-a="import-go" data-v="substituir">Substituir o progresso de ${esc(S().profile.name)}</button>
+        <button class="btn ghost" data-a="modal-close">Cancelar</button>`);
     });
   }
 });
@@ -1719,7 +1860,10 @@ document.addEventListener('keydown', (ev) => {
 // ---------- Inicialização ----------
 if (!S().profile.year) S().profile.year = 3;
 G.init({ render: () => { if (session && !session.ended) renderSession(); }, speak });
-Promise.all([C.loadBncc(), C.loadYear(YEAR()), C.loadCurios()]).then(render);
+Promise.all([C.loadBncc(), C.loadYear(YEAR()), C.loadCurios()]).then(() => {
+  render();
+  if (E.profiles().length >= 2 && !chose()) renderWho();
+});
 if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
 if ('serviceWorker' in navigator && window.isSecureContext) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});

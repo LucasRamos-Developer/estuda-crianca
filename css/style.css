@@ -984,3 +984,46 @@ button.unit-banner:active { transform: translateY(3px); box-shadow: 0 1px 0 var(
 .unit-banner.static { background: #fff; color: var(--text); border: 2px solid var(--line); border-bottom-width: 4px; box-shadow: none; }
 .unit-banner.static small { color: var(--green-t); opacity: 1; }
 .unit-banner.static p { color: var(--muted); }
+
+/* ---------- Vários estudantes ---------- */
+.avatar[class*="c-"] { background: var(--c); box-shadow: 0 3px 0 var(--d); }
+.avatar.sm { width: 36px; height: 36px; font-size: 16px; flex: none; }
+.avatar.xl { width: 84px; height: 84px; font-size: 38px; box-shadow: 0 5px 0 var(--d, #cecece); }
+.topbar .avatar { transition: transform .12s; }
+.topbar .avatar:active { transform: scale(.9); }
+
+.who { justify-content: center; }
+.who-head { text-align: center; padding: 28px 16px 8px; }
+.who-head h1 { font-size: 30px; }
+.who-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 16px; width: 100%; max-width: 760px; margin: 0 auto; }
+.who-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 20px 10px 16px; min-width: 0;
+  border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 20px; background: #fff; text-align: center;
+  animation: whoIn .4s cubic-bezier(.3, 1.4, .5, 1) both; animation-delay: var(--d);
+  transition: transform .12s, border-color .15s;
+}
+.who-card b { font-size: 19px; margin-top: 6px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who-card small { color: var(--muted); font-size: 14px; }
+.who-meta { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--faint); margin-top: 2px; }
+.who-card:active { transform: translateY(2px) scale(.97); border-bottom-width: 2px; }
+.who-card.add { border-style: dashed; color: var(--blue-d); }
+.who-card.add .avatar { background: var(--blue-l); color: var(--blue); box-shadow: none; }
+@media (hover: hover) { .who-card:hover { border-color: var(--blue-b); } }
+@media (min-width: 700px) { .who-grid { grid-template-columns: repeat(auto-fit, minmax(170px, 190px)); justify-content: center; } }
+@keyframes whoIn { from { opacity: 0; transform: translateY(16px) scale(.94); } }
+
+.who-list { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 12px; text-align: left; }
+.who-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 16px; background: #fff; color: var(--faint); transition: transform .12s; }
+.who-row b { display: block; color: var(--text); font-size: 17px; }
+.who-row small { display: block; color: var(--muted); font-size: 13px; }
+.who-row.on { border-color: var(--green); background: var(--green-l); }
+.who-row:active { transform: translateY(2px); border-bottom-width: 2px; }
+
+.people { display: flex; flex-direction: column; gap: 10px; }
+.person { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 2px solid var(--bg2); }
+.person:last-of-type { border-bottom: 0; }
+.person b { display: block; font-size: 16px; }
+.person small { display: block; color: var(--muted); font-size: 13px; }
+.icon-btn.danger { color: var(--red); }
+.icon-btn.danger:active { background: var(--red-l); }
+.who { overflow-y: auto; }

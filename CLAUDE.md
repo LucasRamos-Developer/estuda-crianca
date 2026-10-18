@@ -16,7 +16,7 @@ Publicado no GitHub Pages a partir da branch `main`.
    - Mantenha a formatação do arquivo (indentação de 1 espaço) para o diff mostrar só o que é novo.
 2. Rode `node tools/validar-conteudo.mjs --publicar`. Ele falha se alguma curiosidade publicada sumiu ou se alguma
    matéria ficou sem curiosidade nova (compara com `origin/main`). Só publique com o validador sem erros.
-3. Se mudou HTML, CSS, JS ou ícones, aumente a versão `CACHE` em `sw.js` (ex.: `estuda-v11` → `estuda-v12`).
+3. Se mudou HTML, CSS, JS ou ícones, aumente a versão `CACHE` em `sw.js` (ex.: `estuda-v12` → `estuda-v13`).
    Arquivos novos em `data/` precisam entrar na lista `DATA` do `sw.js`.
 
 ## Regras gerais
