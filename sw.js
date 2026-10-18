@@ -1,6 +1,6 @@
 // Service worker: deixa o app 100% offline.
 // IMPORTANTE: ao alterar qualquer arquivo do app, aumente a versão abaixo.
-const CACHE = 'estuda-v1';
+const CACHE = 'estuda-v2';
 const ASSETS = [
   './',
   './index.html',

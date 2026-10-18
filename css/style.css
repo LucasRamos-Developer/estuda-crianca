@@ -95,6 +95,8 @@ p { margin: 0; }
   font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .4px;
 }
 .nav button.on { border-color: var(--blue-b); background: var(--blue-l); color: var(--blue-d); }
+.nav { grid-template-columns: repeat(5, 1fr); }
+.nav-subjects { display: none; }
 
 .topbar {
   position: sticky; top: 0; z-index: 20;
@@ -538,6 +540,14 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
     top: 0; right: auto; width: var(--nav-w); display: flex; flex-direction: column; gap: 8px;
     border-top: 0; border-right: 2px solid var(--line); padding: 24px 16px;
   }
+  .nav { overflow-y: auto; }
+  .nav .nav-subj-btn { display: none; }
+  .nav-subjects { display: flex; flex-direction: column; gap: 2px; margin-top: 14px; padding-top: 14px; border-top: 2px solid var(--line); }
+  .nav-title { font-size: 12px; font-weight: 900; color: var(--faint); text-transform: uppercase; letter-spacing: .6px; padding: 0 12px 8px; }
+  .nav .nav-subj { flex-direction: row; gap: 10px; padding: 7px 10px; font-size: 14px; text-transform: none; letter-spacing: 0; color: var(--text); justify-content: flex-start; }
+  .nav .nav-subj .sic { width: 30px; height: 30px; border-radius: 9px; }
+  .nav .nav-subj .sic .glyph { font-size: 12px; }
+  .nav .nav-subj.on { background: var(--l); border-color: var(--c); color: var(--text); }
   .nav .brand { display: block; font-size: 25px; white-space: nowrap; font-weight: 900; color: var(--green); padding: 0 12px 18px; letter-spacing: -.5px; }
   .nav button { flex-direction: row; gap: 14px; padding: 12px 14px; font-size: 15px; justify-content: flex-start; color: var(--muted); }
   .nav button:hover:not(.on) { background: var(--bg2); }
@@ -665,3 +675,10 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 .back-link { display: inline-flex; align-items: center; gap: 4px; color: var(--blue-d); font-size: 15px; padding: 4px 0; margin-bottom: 4px; }
 @media (min-width: 700px) { .subj-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 380px) { .subj-current .btn { padding: 8px 10px; font-size: 12px; } }
+
+.subj-current .lbl-sm { display: none; }
+@media (max-width: 480px) {
+  .subj-current .lbl-lg { display: none; }
+  .subj-current .lbl-sm { display: inline; }
+  .subj-current small { font-size: 11px; }
+}

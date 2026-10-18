@@ -60,7 +60,18 @@ function topbar() {
 
 function nav() {
   const items = [['learn', 'home', 'Trilha'], ['challenges', 'bolt', 'Desafios'], ['progress', 'chart', 'Progresso'], ['parents', 'lock', 'Pais']];
-  return `<nav class="nav"><div class="brand">Estuda Criança</div>${items.map(([id, ic, label]) => `<button class="${ui.tab === id || (id === 'learn' && ui.tab === 'table') ? 'on' : ''}" data-a="tab" data-v="${id}">${icon(ic, 26)}<span>${label}</span></button>`).join('')}</nav>`;
+  const onLearn = ui.tab === 'learn' || ui.tab === 'table';
+  const main = items.map(([id, ic, label]) => `<button class="${ui.tab === id || (id === 'learn' && ui.tab === 'table') ? 'on' : ''}" data-a="tab" data-v="${id}">${icon(ic, 26)}<span>${label}</span></button>`);
+  // No celular/tablet: botão "Matérias" no menu de baixo (abre a lista)
+  main.splice(1, 0, `<button class="nav-subj-btn" data-a="pick-subj">${icon('book', 26)}<span>Matérias</span></button>`);
+  // No computador: lista de matérias no menu lateral
+  const crs = C.course(YEAR());
+  const link = (id, glyph, name, color) => `<button class="nav-subj c-${color} ${onLearn && ui.subj === id ? 'on' : ''}" data-a="subj" data-v="${id}"><span class="sic">${glyph}</span><span>${name}</span></button>`;
+  const subjects = `<div class="nav-subjects"><div class="nav-title">Matérias · ${YEAR()}º ano</div>
+    ${link('all', icon('layers', 18), 'Trilha padrão', 'green')}
+    ${crs.subjects.map((sb) => link(sb.id, subjGlyph(sb, 18), sb.full, sb.color)).join('')}
+  </div>`;
+  return `<nav class="nav"><div class="brand">Estuda Criança</div>${main.join('')}${subjects}</nav>`;
 }
 
 const TABS = { learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
@@ -76,7 +87,7 @@ function renderLearn() {
   const picker = `<div class="subj-current">
     <span class="sic c-${cur ? cur.color : 'green'}">${cur ? subjGlyph(cur, 24) : icon('layers', 24)}</span>
     <div class="grow"><small>Estudando agora · ${year}º ano</small><b>${cur ? cur.full : 'Trilha padrão'}</b></div>
-    <button class="btn white sm" data-a="pick-subj">Escolher matéria</button>
+    <button class="btn white sm" data-a="pick-subj"><span class="lbl-lg">Escolher matéria</span><span class="lbl-sm">Trocar</span></button>
   </div>`;
   if (!cur) {
     const done = crs.all.filter((n) => E.stars(n.id) >= 1).length;
@@ -1126,7 +1137,7 @@ document.addEventListener('click', (ev) => {
     case 'study-walk': { const n = studyNode; startWalk(n.gen.op, n.gen.n, () => lessonGo(n.id)); break; }
     case 'check-mark': checkMark(Number(v)); break;
     case 'go-subj': ui.tab = 'learn'; ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
-    case 'subj': ui.subj = v; ui.pop = null; closeModal(); sfx.tap(); render(); scrollTo(0, 0); break;
+    case 'subj': ui.subj = v; ui.tab = 'learn'; ui.pop = null; closeModal(); sfx.tap(); render(); scrollTo(0, 0); break;
     case 'pick-subj': pickSubject(); break;
     case 'study-close': closeOverlay(); break;
     case 'table-op': ui.tableOp = v; sfx.tap(); render(); break;

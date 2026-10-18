@@ -38,7 +38,7 @@ Pela rede local (http) o modo offline e o "instalar" não funcionam; no GitHub P
 ## Publicar
 
 Push na `main` → o GitHub Pages publica sozinho. **Ao mudar qualquer arquivo, aumente a versão do cache** em `sw.js`
-(`estuda-v1` → `estuda-v2`), senão os aparelhos continuam com a versão antiga.
+(`estuda-v2` → `estuda-v3`), senão os aparelhos continuam com a versão antiga.
 
 ## Estrutura
 
