@@ -3,8 +3,8 @@ import * as E from './engine.js';
 import ano3 from './content/ano3.js';
 
 export const SUBJECTS = [
-  { id: 'lp', comp: 'LP', name: 'Português', full: 'Língua Portuguesa', color: 'blue', glyph: 'Aa' },
   { id: 'ma', comp: 'MA', name: 'Matemática', full: 'Matemática', color: 'green', glyph: '123' },
+  { id: 'lp', comp: 'LP', name: 'Português', full: 'Língua Portuguesa', color: 'blue', glyph: 'Aa' },
   { id: 'ci', comp: 'CI', name: 'Ciências', full: 'Ciências', color: 'teal', icon: 'flask' },
   { id: 'hi', comp: 'HI', name: 'História', full: 'História', color: 'orange', icon: 'landmark' },
   { id: 'ge', comp: 'GE', name: 'Geografia', full: 'Geografia', color: 'purple', icon: 'globe' },

@@ -682,3 +682,13 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
   .subj-current .lbl-sm { display: inline; }
   .subj-current small { font-size: 11px; }
 }
+
+/* ---------- Matemática como matéria principal ---------- */
+.math-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
+.math-head > div > small { display: block; color: var(--green-t); font-size: 13px; text-transform: uppercase; letter-spacing: .6px; font-weight: 900; }
+.math-head h1 { font-size: 30px; color: var(--green-t); }
+.math-head .tool-card { margin-bottom: 10px; }
+@media (min-width: 700px) {
+  .math-head { flex-direction: row; align-items: center; justify-content: space-between; }
+  .math-head .tool-card { width: auto; max-width: 340px; margin: 0; }
+}

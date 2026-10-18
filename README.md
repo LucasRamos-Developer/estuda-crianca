@@ -10,9 +10,9 @@ Site: https://lucasramos-developer.github.io/estuda-crianca/
 
 - No primeiro acesso, a criança informa o nome e **o ano escolar**. A trilha é montada para esse ano
   (dá para trocar depois em *Pais → Configurações*).
-- **Trilha padrão**: um passo de cada matéria, em sequência. Pelo botão **Escolher matéria** a criança estuda uma
-  matéria só: Português, Matemática, Ciências, História, Geografia, Arte, Educação Física, Inglês ou Ensino Religioso.
-  O progresso é o mesmo nas duas.
+- **Matemática é a matéria principal**: abre primeiro e tem o primeiro lugar no menu. As tabuadas ficam dentro dela.
+- **Outras matérias** (área separada): Português, Ciências, História, Geografia, Arte, Educação Física, Inglês e
+  Ensino Religioso, cada uma com a sua trilha, e uma trilha com todas as matérias juntas.
 - Cada passo mostra uma **explicação curta** e depois **perguntas**. Cada passo tem 3 níveis (estrelas).
 - **3º ano**: conteúdo completo escrito para todas as matérias, ligado aos códigos da BNCC,
   com História e Geografia de Joinville e Inglês dos anos iniciais (rede municipal).
@@ -38,7 +38,7 @@ Pela rede local (http) o modo offline e o "instalar" não funcionam; no GitHub P
 ## Publicar
 
 Push na `main` → o GitHub Pages publica sozinho. **Ao mudar qualquer arquivo, aumente a versão do cache** em `sw.js`
-(`estuda-v2` → `estuda-v3`), senão os aparelhos continuam com a versão antiga.
+(`estuda-v3` → `estuda-v4`), senão os aparelhos continuam com a versão antiga.
 
 ## Estrutura
 

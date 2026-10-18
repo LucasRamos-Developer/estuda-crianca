@@ -30,7 +30,7 @@ const subjGlyph = (s, size = 26) => (s.icon ? icon(s.icon, size) : `<span class=
 const initial = () => esc((S().profile.name || '?').trim().charAt(0).toUpperCase());
 
 const ui = {
-  subj: 'all',
+  subj: 'ma',
   tab: 'learn', pop: null, parentOk: false, pin: '', pinStep: null, pinFirst: '',
   testOp: 'mul', gridOp: 'mul', tableOp: 'mul',
   chOp: 'mul', chN: 'all', chMode: 'quiz',
@@ -59,22 +59,27 @@ function topbar() {
 }
 
 function nav() {
-  const items = [['learn', 'home', 'Trilha'], ['challenges', 'bolt', 'Desafios'], ['progress', 'chart', 'Progresso'], ['parents', 'lock', 'Pais']];
-  const onLearn = ui.tab === 'learn' || ui.tab === 'table';
-  const main = items.map(([id, ic, label]) => `<button class="${ui.tab === id || (id === 'learn' && ui.tab === 'table') ? 'on' : ''}" data-a="tab" data-v="${id}">${icon(ic, 26)}<span>${label}</span></button>`);
-  // No celular/tablet: botão "Matérias" no menu de baixo (abre a lista)
-  main.splice(1, 0, `<button class="nav-subj-btn" data-a="pick-subj">${icon('book', 26)}<span>Matérias</span></button>`);
-  // No computador: lista de matérias no menu lateral
+  const onMath = (ui.tab === 'learn' && ui.subj === 'ma') || ui.tab === 'table';
+  const onOthers = ui.tab === 'others' || (ui.tab === 'learn' && ui.subj !== 'ma');
+  const btn = (attrs, on, ic, label) => `<button class="${on ? 'on' : ''}" ${attrs}>${icon(ic, 26)}<span>${label}</span></button>`;
+  const main = [
+    btn('data-a="subj" data-v="ma"', onMath, 'home', 'Matemática'),
+    btn('data-a="tab" data-v="others"', onOthers, 'book', 'Matérias'),
+    btn('data-a="tab" data-v="challenges"', ui.tab === 'challenges', 'bolt', 'Desafios'),
+    btn('data-a="tab" data-v="progress"', ui.tab === 'progress', 'chart', 'Progresso'),
+    btn('data-a="tab" data-v="parents"', ui.tab === 'parents', 'lock', 'Pais'),
+  ];
+  // No computador: lista das outras matérias no menu lateral
   const crs = C.course(YEAR());
-  const link = (id, glyph, name, color) => `<button class="nav-subj c-${color} ${onLearn && ui.subj === id ? 'on' : ''}" data-a="subj" data-v="${id}"><span class="sic">${glyph}</span><span>${name}</span></button>`;
-  const subjects = `<div class="nav-subjects"><div class="nav-title">Matérias · ${YEAR()}º ano</div>
-    ${link('all', icon('layers', 18), 'Trilha padrão', 'green')}
-    ${crs.subjects.map((sb) => link(sb.id, subjGlyph(sb, 18), sb.full, sb.color)).join('')}
+  const link = (id, glyph, name, color) => `<button class="nav-subj c-${color} ${ui.tab === 'learn' && ui.subj === id ? 'on' : ''}" data-a="subj" data-v="${id}"><span class="sic">${glyph}</span><span>${name}</span></button>`;
+  const others = `<div class="nav-subjects"><div class="nav-title">Outras matérias · ${YEAR()}º ano</div>
+    ${crs.subjects.filter((sb) => sb.id !== 'ma').map((sb) => link(sb.id, subjGlyph(sb, 18), sb.full, sb.color)).join('')}
+    ${link('all', icon('layers', 18), 'Todas juntas', 'green')}
   </div>`;
-  return `<nav class="nav"><div class="brand">Estuda Criança</div>${main.join('')}${subjects}</nav>`;
+  return `<nav class="nav"><div class="brand">Estuda Criança</div>${main.join('')}${others}</nav>`;
 }
 
-const TABS = { learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
+const TABS = { others: renderOthers, learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
 
 // ---------- Trilha ----------
 const OFFSETS = [0, 44, 66, 44, 0, -44, -66, -44];
@@ -82,43 +87,42 @@ const OFFSETS = [0, 44, 66, 44, 0, -44, -66, -44];
 function renderLearn() {
   const year = YEAR();
   const crs = C.course(year);
-  if (!crs.subjects.some((s) => s.id === ui.subj)) ui.subj = 'all';
+  if (ui.subj !== 'all' && !crs.subjects.some((s) => s.id === ui.subj)) ui.subj = 'ma';
   const cur = ui.subj === 'all' ? null : crs.subjects.find((s) => s.id === ui.subj);
-  const picker = `<div class="subj-current">
-    <span class="sic c-${cur ? cur.color : 'green'}">${cur ? subjGlyph(cur, 24) : icon('layers', 24)}</span>
-    <div class="grow"><small>Estudando agora · ${year}º ano</small><b>${cur ? cur.full : 'Trilha padrão'}</b></div>
-    <button class="btn white sm" data-a="pick-subj"><span class="lbl-lg">Escolher matéria</span><span class="lbl-sm">Trocar</span></button>
-  </div>`;
+  const back = ui.subj === 'ma' ? '' : `<button class="back-link" data-a="tab" data-v="others">${icon('left', 20)} Outras matérias</button>`;
   if (!cur) {
     const done = crs.all.filter((n) => E.stars(n.id) >= 1).length;
-    return `${picker}
-      <div class="unit-banner c-green"><div><small>${year}º ano · Trilha padrão</small><h2>Um pouco de cada matéria</h2><p>Um passo de cada matéria, em sequência · ${done}/${crs.all.length} feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
+    return `${back}
+      <div class="unit-banner c-green"><div><small>${year}º ano · Todas as matérias juntas</small><h2>Um pouco de cada matéria</h2><p>Um passo de cada matéria, em sequência · ${done}/${crs.all.length} feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
       <div class="path">${pathNodes(year, crs.all, true)}</div>`;
   }
   const prog = C.subjectProgress(year, cur.id);
-  const tools = cur.id === 'ma' ? `<button class="tool-card c-green" data-a="tab" data-v="table">${icon('book', 26)}<div class="grow"><b>Tabuadas</b><small>Ver, ouvir e aprender as tabuadas de somar, tirar, multiplicar e dividir</small></div>${icon('right', 22)}</button>` : '';
-  return `${picker}${tools}${cur.units.map((u, i) => `<section class="unit">
+  const head = cur.id === 'ma'
+    ? `<div class="math-head"><div><small>${year}º ano · matéria principal</small><h1>Matemática</h1><p class="muted">${prog.done}/${prog.total} passos feitos</p></div>
+        <button class="tool-card c-green" data-a="tab" data-v="table">${icon('book', 26)}<div class="grow"><b>Tabuadas</b><small>Ver, ouvir e aprender as tabuadas</small></div>${icon('right', 22)}</button></div>`
+    : `${back}<h1 class="page-title">${cur.full}</h1>`;
+  return `${head}${cur.units.map((u, i) => `<section class="unit">
       <div class="unit-banner c-${cur.color}"><div><small>${cur.full} · ${year}º ano · Unidade ${i + 1}</small><h2>${esc(u.title)}</h2>
-        <p>${i === 0 ? `${prog.done}/${prog.total} passos feitos` : `${u.nodes.length} passos`}</p></div><div class="big">${subjGlyph(cur, 40)}</div></div>
+        <p>${u.nodes.filter((n) => E.stars(n.id) >= 1).length}/${u.nodes.length} passos feitos</p></div><div class="big">${subjGlyph(cur, 40)}</div></div>
       <div class="path">${pathNodes(year, u.nodes, false)}</div>
     </section>`).join('')}
     ${cur.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
 }
 
-// Grade para escolher a matéria (ou a trilha padrão)
-function pickSubject() {
+// Área separada com as outras matérias
+function renderOthers() {
   const year = YEAR();
   const crs = C.course(year);
   const all = crs.all;
-  const doneAll = all.filter((n) => E.stars(n.id) >= 1).length;
-  const tile = (id, color, glyph, name, sub) => `<button class="subj-tile c-${color} ${ui.subj === id ? 'on' : ''}" data-a="subj" data-v="${id}">
+  const tile = (id, color, glyph, name, sub) => `<button class="subj-tile c-${color}" data-a="subj" data-v="${id}">
     <span class="sic">${glyph}</span><b>${name}</b><small>${sub}</small></button>`;
-  showModal(`<h2>O que você quer estudar?</h2><p>${year}º ano</p>
+  return `<h1 class="page-title">Outras matérias</h1>
+    <p class="muted" style="margin:-8px 0 16px">${year}º ano · cada matéria tem a sua trilha</p>
     <div class="subj-grid">
-      ${tile('all', 'green', icon('layers', 26), 'Trilha padrão', `Todas as matérias · ${doneAll}/${all.length}`)}
-      ${crs.subjects.map((sb) => { const p = C.subjectProgress(year, sb.id); return tile(sb.id, sb.color, subjGlyph(sb, 26), sb.full, `${p.done}/${p.total} passos`); }).join('')}
+      ${crs.subjects.filter((sb) => sb.id !== 'ma').map((sb) => { const p = C.subjectProgress(year, sb.id); return tile(sb.id, sb.color, subjGlyph(sb, 26), sb.full, `${p.done}/${p.total} passos`); }).join('')}
     </div>
-    <button class="btn ghost" data-a="modal-close">Fechar</button>`);
+    <h2 class="section-title">Todas juntas</h2>
+    <button class="tool-card c-green" data-a="subj" data-v="all">${icon('layers', 26)}<div class="grow"><b>Trilha com todas as matérias</b><small>Um passo de cada matéria, em sequência · ${all.filter((n) => E.stars(n.id) >= 1).length}/${all.length}</small></div>${icon('right', 22)}</button>`;
 }
 
 function pathNodes(year, nodes, showSubj) {
@@ -1138,7 +1142,7 @@ document.addEventListener('click', (ev) => {
     case 'check-mark': checkMark(Number(v)); break;
     case 'go-subj': ui.tab = 'learn'; ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
     case 'subj': ui.subj = v; ui.tab = 'learn'; ui.pop = null; closeModal(); sfx.tap(); render(); scrollTo(0, 0); break;
-    case 'pick-subj': pickSubject(); break;
+    case 'pick-subj': ui.tab = 'others'; render(); break;
     case 'study-close': closeOverlay(); break;
     case 'table-op': ui.tableOp = v; sfx.tap(); render(); break;
     case 'table-open': openTable(Number(v)); break;
@@ -1204,7 +1208,7 @@ document.addEventListener('click', (ev) => {
     case 'fact': factDetail(v); break;
     case 'onb-goal': ui.onbGoal = Number(v); sfx.tap(); renderOnboarding(); break;
     case 'onb-year': ui.onbYear = Number(v); sfx.tap(); renderOnboarding(); break;
-    case 'set-year': S().profile.year = Number(v); E.save(); ui.subj = 'all'; toast(`Trilha do ${v}º ano`); render(); break;
+    case 'set-year': S().profile.year = Number(v); E.save(); ui.subj = 'ma'; toast(`Trilha do ${v}º ano`); render(); break;
     case 'print-report': printReport(); break;
     case 'do-print': window.print(); break;
     case 'onb-done': {
