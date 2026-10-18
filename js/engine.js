@@ -286,12 +286,13 @@ const KEY = 'tabuada-v1';
 const fresh = () => ({
   v: 1,
   created: Date.now(),
-  profile: { name: '', avatar: '' },
+  profile: { name: '', year: 3 },
   settings: { sound: true, goal: 30, unlockAll: false, pin: null },
   xp: 0,
   days: {},
   nodes: {},
   facts: {},
+  skills: {},
   best: { time: { add: 0, mul: 0, div: 0, sub: 0, mix: 0 }, survival: 0, master: 0, streak: 0, ch: {} },
   tests: [],
   daily: {},
@@ -418,6 +419,35 @@ export function recordAnswer(q, ok, ms) {
   d.q++;
   if (ok) d.c++;
   save();
+}
+
+// Respostas das perguntas escritas (por habilidade BNCC)
+export function recordSkill(code, ok) {
+  if (code) {
+    const k = (state.skills[code] ||= { c: 0, w: 0 });
+    ok ? k.c++ : k.w++;
+  }
+  const d = today();
+  d.q++;
+  if (ok) d.c++;
+  save();
+}
+
+// Passo de estudo (auto-avaliação): define as estrelas direto
+export function markStudied(nodeId, title, starsValue) {
+  const n = (state.nodes[nodeId] ||= { stars: 0, plays: 0, best: 0 });
+  n.stars = Math.max(n.stars, starsValue);
+  n.plays++;
+  const d = today();
+  const streakBefore = streak();
+  d.xp += 5; d.l++;
+  state.xp += 5;
+  state.best.streak = Math.max(state.best.streak, streak());
+  state.log.unshift({ ts: Date.now(), kind: 'study', title, score: starsValue, total: 3, ms: 0, xp: 5 });
+  state.log = state.log.slice(0, 200);
+  const newAch = checkAchievements();
+  save();
+  return { streakBefore, streakAfter: streak(), newAch };
 }
 
 export function finishSession({ kind, title, nodeId, correct, total, ms, xp, perfect }) {

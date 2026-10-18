@@ -1,5 +1,6 @@
 import * as E from './engine.js';
 import { icon } from './icons.js';
+import * as C from './curriculum.js';
 import { sfx, setSound, confetti, vibrate } from './fx.js';
 
 const $app = document.getElementById('app');
@@ -24,13 +25,16 @@ const pct = (x) => (x == null ? '—' : `${Math.round(x * 100)}%`);
 const fmtTime = (ms) => { const s = Math.round(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 const fmtDur = (ms) => { const m = Math.round(ms / 60000); return m < 60 ? `${m} min` : `${Math.floor(m / 60)}h ${m % 60}min`; };
 const fmtDate = (ts) => new Date(ts).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+const YEAR = () => S().profile.year || 3;
+const subjGlyph = (s, size = 26) => (s.icon ? icon(s.icon, size) : `<span class="glyph">${s.glyph}</span>`);
 const initial = () => esc((S().profile.name || '?').trim().charAt(0).toUpperCase());
 
 const ui = {
+  subj: 'all',
   tab: 'learn', pop: null, parentOk: false, pin: '', pinStep: null, pinFirst: '',
   testOp: 'mul', gridOp: 'mul', tableOp: 'mul',
   chOp: 'mul', chN: 'all', chMode: 'quiz',
-  onbName: '', onbGoal: 20,
+  onbName: '', onbGoal: 20, onbYear: 3,
 };
 let session = null;
 let walk = null;
@@ -56,7 +60,7 @@ function topbar() {
 
 function nav() {
   const items = [['learn', 'home', 'Trilha'], ['table', 'book', 'Tabuada'], ['challenges', 'bolt', 'Desafios'], ['progress', 'chart', 'Progresso'], ['parents', 'lock', 'Pais']];
-  return `<nav class="nav"><div class="brand">Tabuada</div>${items.map(([id, ic, label]) => `<button class="${ui.tab === id ? 'on' : ''}" data-a="tab" data-v="${id}">${icon(ic, 26)}<span>${label}</span></button>`).join('')}</nav>`;
+  return `<nav class="nav"><div class="brand">Aprender Bia</div>${items.map(([id, ic, label]) => `<button class="${ui.tab === id ? 'on' : ''}" data-a="tab" data-v="${id}">${icon(ic, 26)}<span>${label}</span></button>`).join('')}</nav>`;
 }
 
 const TABS = { learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
@@ -65,64 +69,102 @@ const TABS = { learn: renderLearn, table: renderTable, challenges: renderChallen
 const OFFSETS = [0, 44, 66, 44, 0, -44, -66, -44];
 
 function renderLearn() {
-  return E.UNITS.map((u, ui_) => {
-    const cur = E.currentIndex(u);
-    const nodes = u.nodes.map((n, j) => {
-      const unlocked = E.isUnlocked(u.id, j);
-      const st = E.stars(n.id);
-      const off = OFFSETS[j % OFFSETS.length];
-      const isCur = j === cur;
-      const cls = !unlocked ? 'locked' : st >= 3 ? 'gold' : '';
-      const inner = n.review ? icon('star', 30) : n.icon;
-      const starsHtml = unlocked ? `<div class="node-stars">${[0, 1, 2].map((i) => `<span class="${i < st ? 'on' : ''}">${icon('star', 14)}</span>`).join('')}</div>` : '';
-      return `<div class="node-row c-${u.color}">
-        <div class="node-wrap" style="transform:translateX(${off}px)">
-          ${isCur && ui.pop !== n.id ? `<div class="start-bubble">${st ? 'Praticar' : 'Começar'}</div>` : ''}
-          ${isCur ? `<div class="ring" style="--p:${(st / 3) * 100}%"></div>` : ''}
-          <button class="node ${cls}" data-a="node" data-v="${n.id}" aria-label="${esc(n.title)}">${inner}</button>
-          ${starsHtml}
-        </div>
-        ${ui.pop === n.id ? nodePopover(n, unlocked, st, off) : ''}
-      </div>`;
-    }).join('');
-    return `<section class="unit">
-      <div class="unit-banner c-${u.color}">
-        <div><small>Unidade ${ui_ + 1}</small><h2>${u.title}</h2><p>${u.subtitle}</p></div>
-        <div class="big">${u.sym}</div>
+  const year = YEAR();
+  const crs = C.course(year);
+  if (!crs.subjects.some((s) => s.id === ui.subj)) ui.subj = 'all';
+  const chips = `<div class="subj-chips">
+    <button class="subj-chip c-green ${ui.subj === 'all' ? 'on' : ''}" data-a="subj" data-v="all">${icon('layers', 22)}<span>Tudo</span></button>
+    ${crs.subjects.map((s) => `<button class="subj-chip c-${s.color} ${ui.subj === s.id ? 'on' : ''}" data-a="subj" data-v="${s.id}">${subjGlyph(s, 22)}<span>${s.name}</span></button>`).join('')}
+  </div>`;
+  if (ui.subj === 'all') {
+    const done = crs.all.filter((n) => E.stars(n.id) >= 1).length;
+    return `${chips}
+      <div class="unit-banner c-green"><div><small>${year}º ano · Trilha completa</small><h2>Aprender de tudo</h2><p>Um passo de cada matéria, em sequência · ${done}/${crs.all.length} feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
+      <div class="path">${pathNodes(year, crs.all, true)}</div>`;
+  }
+  const subj = crs.subjects.find((s) => s.id === ui.subj);
+  const prog = C.subjectProgress(year, subj.id);
+  return `${chips}${subj.units.map((u, i) => `<section class="unit">
+      <div class="unit-banner c-${subj.color}"><div><small>${subj.full} · ${year}º ano · Unidade ${i + 1}</small><h2>${esc(u.title)}</h2>
+        <p>${i === 0 ? `${prog.done}/${prog.total} passos feitos` : `${u.nodes.length} passos`}</p></div><div class="big">${subjGlyph(subj, 40)}</div></div>
+      <div class="path">${pathNodes(year, u.nodes, false)}</div>
+    </section>`).join('')}
+    ${subj.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
+}
+
+function pathNodes(year, nodes, showSubj) {
+  const cur = C.currentId(year, nodes);
+  return nodes.map((n, j) => {
+    const open = C.unlocked(year, n);
+    const st = E.stars(n.id);
+    const off = OFFSETS[j % OFFSETS.length];
+    const isCur = n.id === cur;
+    const subj = C.subjectById(n.subj);
+    const cls = !open ? 'locked' : st >= 3 ? 'gold' : '';
+    const inner = n.kind === 'gen' ? (n.review ? icon('star', 30) : n.icon) : n.kind === 'check' ? icon('book', 28) : subjGlyph(subj, 28);
+    const starsHtml = open ? `<div class="node-stars">${[0, 1, 2].map((i) => `<span class="${i < st ? 'on' : ''}">${icon('star', 14)}</span>`).join('')}</div>` : '';
+    return `<div class="node-row c-${n.color}">
+      <div class="node-wrap" style="transform:translateX(${off}px)">
+        ${isCur && ui.pop !== n.id ? `<div class="start-bubble">${st ? 'Praticar' : 'Começar'}</div>` : ''}
+        ${isCur ? `<div class="ring" style="--p:${(st / 3) * 100}%"></div>` : ''}
+        <button class="node ${cls}" data-a="node" data-v="${n.id}" aria-label="${esc(n.title)}">${inner}</button>
+        ${starsHtml}
+        ${showSubj ? `<span class="node-subj">${subj.name}</span>` : ''}
       </div>
-      <div class="path">${nodes}</div>
-    </section>`;
+      ${ui.pop === n.id ? nodePopover(n, open, st, off) : ''}
+    </div>`;
   }).join('');
 }
 
-function nodePopover(n, unlocked, st, off) {
-  if (!unlocked) {
-    return `<div class="node-pop locked" style="--ax:${off}px"><h3>${esc(n.title)}</h3><p>Complete a lição anterior para liberar esta.</p></div>`;
+function nodePopover(n, open, st, off) {
+  const subj = C.subjectById(n.subj);
+  if (!open) {
+    return `<div class="node-pop locked" style="--ax:${off}px"><small>${subj.full}</small><h3>${esc(n.title)}</h3><p>Complete o passo anterior desta unidade para liberar.</p></div>`;
   }
-  const xp = n.review ? 15 : 10;
-  const lvl = st >= 3 ? 'Nível máximo! Pratique para não esquecer.' : n.review ? `Lição ${st + 1} de 3` : `Nível ${st + 1} de 3 · ${LEVEL_NAMES[st]}`;
+  const lvl = n.kind === 'check' ? 'Estudo pela BNCC: leia e marque o que já sabe.'
+    : st >= 3 ? 'Nível máximo! Pratique para não esquecer.' : `Nível ${st + 1} de 3 · ${LEVEL_NAMES[st]}`;
+  const btn = n.kind === 'check' ? 'Estudar · +5 XP' : `Estudar e responder · +${n.review ? 15 : 10} XP`;
   return `<div class="node-pop" style="--ax:${off}px">
-    <h3>${esc(n.title)}</h3><p>${lvl}</p>
-    <button class="btn white" data-a="start" data-v="${n.id}">${n.review ? 'Começar' : 'Ver e responder'} · +${xp} XP</button>
+    <small>${subj.full}</small><h3>${esc(n.title)}</h3><p>${lvl}</p>
+    <button class="btn white" data-a="start" data-v="${n.id}">${btn}</button>
   </div>`;
 }
 
-// Tela "ver a tabuada" antes de responder
+// Tela de estudo antes de responder
 function renderStudy(n) {
-  const st = E.nodeStudy(n);
-  const u = E.unitById(n.unit);
-  const isTable = u.table;
+  const subj = C.subjectById(n.subj);
+  let body;
+  let foot = '<div class="lesson-foot"><button class="btn" data-a="study-go">Responder</button></div>';
+  if (n.kind === 'gen') {
+    const st = E.nodeStudy(n.gen);
+    const isTable = E.unitById(n.gen.unit)?.table;
+    body = `<div class="tag">${isTable ? 'Veja a tabuada' : 'Veja os exemplos'}</div>
+      <h2 class="q-title">${esc(n.title)}</h2>
+      ${st.rows.length ? `<div class="study-grid ${isTable ? '' : 'examples'}">${st.rows.map((r) => `<div>${r}</div>`).join('')}</div>` : ''}
+      <div class="tip">${icon('bulb', 22)}<span>${esc(st.tip)}</span></div>
+      ${isTable ? `<button class="btn white" data-a="study-walk">${icon('book', 22)} Aprender conta por conta</button>` : ''}`;
+  } else if (n.kind === 'check') {
+    body = `<div class="tag">${subj.full} · Estudo</div>
+      <h2 class="q-title">O que aprender</h2>
+      <div class="skill-list">${n.skills.map((code) => `<div class="skill"><b>${code}</b><p>${esc(C.skillByCode(code)?.text || '')}</p></div>`).join('')}</div>
+      <div class="tip">${icon('bulb', 22)}<span>Leia com um adulto, procure exemplos no livro da escola e marque como está.</span></div>`;
+    foot = `<div class="lesson-foot two-even">
+      <button class="btn white" data-a="check-mark" data-v="1">Ainda estou aprendendo</button>
+      <button class="btn" data-a="check-mark" data-v="3">Já sei!</button></div>`;
+  } else {
+    body = `<div class="tag">${subj.full}</div>
+      <h2 class="q-title">${esc(n.title)}</h2>
+      <p class="lead">${esc(n.intro)}</p>
+      ${n.passage ? `<div class="passage">${esc(n.passage)}</div>` : ''}
+      <ul class="points">${n.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
+      ${n.example ? `<div class="tip">${icon('bulb', 22)}<span class="pre">${esc(n.example)}</span></div>` : ''}
+      ${n.skills.length ? `<p class="muted small">BNCC: ${n.skills.join(', ')}</p>` : '<p class="muted small">Currículo da rede municipal de Joinville</p>'}`;
+  }
   $ov.innerHTML = `<div class="screen"><div class="inner">
     <div class="lesson-top"><button class="icon-btn" data-a="study-close" aria-label="Fechar">${icon('x', 26)}</button>
       <div class="progress"><div class="fill" style="width:0"></div></div></div>
-    <div class="lesson-body c-${u.color}">
-      <div class="tag">${isTable ? 'Veja a tabuada' : 'Veja os exemplos'}</div>
-      <h2 class="q-title">${esc(n.title)}</h2>
-      <div class="study-grid ${isTable ? '' : 'examples'}">${st.rows.map((r) => `<div>${r}</div>`).join('')}</div>
-      <div class="tip">${icon('bulb', 22)}<span>${esc(st.tip)}</span></div>
-      ${isTable ? `<button class="btn white" data-a="study-walk">${icon('book', 22)} Aprender conta por conta</button>` : ''}
-    </div>
-    <div class="lesson-foot"><button class="btn" data-a="study-go">Responder</button></div>
+    <div class="lesson-body c-${n.color}">${body}</div>
+    ${foot}
   </div></div>`;
 }
 
@@ -143,7 +185,7 @@ function openTable(n) {
   sfx.tap();
   showModal(`<div class="c-${OP_COLOR[op]}"><h2 class="tbig-title">Tabuada do ${n}</h2><span class="muted">${OP_NAME[op]}</span></div>
     <ol class="tbig c-${OP_COLOR[op]}">${E.tableRows(op, n).map((r) => `<li><span>${r.a} ${E.SYM[op]} ${r.b} =</span><b>${r.res}</b></li>`).join('')}</ol>
-    ${CAN_SPEAK ? `<button class="btn white" data-a="table-speak" data-v="${n}">${icon('speaker', 20)} Ouvir a tabuada</button>` : ''}
+    ${CAN_SPEAK ? speakBtn('table-speak', n, 'Ouvir a tabuada') : ''}
     <button class="btn white" data-a="walk-start" data-v="${n}">${icon('book', 20)} Aprender conta por conta</button>
     <button class="btn" data-a="table-quiz" data-v="${n}">Desafio desta tabuada</button>
     <button class="btn ghost" data-a="modal-close">Fechar</button>`);
@@ -166,19 +208,40 @@ function explainHtml(r) {
   return `${dotsHtml(ex.visual)}<div class="help-lines">${ex.lines.map((l) => `<div>${esc(l)}</div>`).join('')}</div>`;
 }
 
-function speak(text) {
+// Voz: fala uma ou várias linhas; o mesmo botão vira "Parar" enquanto fala
+let speakLeft = 0;
+function setSpeaking(on) { document.body.classList.toggle('is-speaking', on); }
+function stopSpeak() {
+  speakLeft = 0;
+  if (CAN_SPEAK) window.speechSynthesis.cancel();
+  setSpeaking(false);
+}
+function speak(lines) {
   if (!CAN_SPEAK || !S().settings.sound) return;
+  stopSpeak();
   try {
     const synth = window.speechSynthesis;
-    synth.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'pt-BR';
-    u.rate = 0.9;
     const voice = synth.getVoices().find((v) => v.lang && v.lang.toLowerCase().startsWith('pt'));
-    if (voice) u.voice = voice;
-    synth.speak(u);
-  } catch { /* sem voz disponível */ }
+    const list = [].concat(lines);
+    speakLeft = list.length;
+    setSpeaking(true);
+    for (const text of list) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'pt-BR';
+      u.rate = 0.9;
+      if (voice) u.voice = voice;
+      u.onend = u.onerror = () => { speakLeft = Math.max(0, speakLeft - 1); if (!speakLeft) setSpeaking(false); };
+      synth.speak(u);
+    }
+  } catch { setSpeaking(false); }
 }
+// Toque no botão de voz: se está falando, para; senão, fala
+function toggleSpeak(lines) {
+  if (document.body.classList.contains('is-speaking')) stopSpeak();
+  else speak(lines);
+}
+const speakBtn = (action, v, label, cls = 'btn white') => `<button class="${cls} spk" data-a="${action}" data-v="${v}">
+  <span class="when-off">${icon('speaker', 20)}${label ? ` ${label}` : ''}</span><span class="when-on">${icon('stop', 20)}${label ? ' Parar' : ''}</span></button>`;
 
 // ---------- Aprender passo a passo ----------
 function startWalk(op, n, then) {
@@ -191,6 +254,7 @@ function startWalk(op, n, then) {
 
 function walkNext() {
   if (!walk) return;
+  stopSpeak();
   if (!walk.shown) { walk.shown = true; sfx.correct(); } else { walk.idx++; walk.shown = false; sfx.tap(); }
   renderWalk();
 }
@@ -226,7 +290,7 @@ function renderWalk() {
       <div class="tag">${OP_NAME[w.op]} · Tabuada do ${w.n} · ${w.idx + 1} de ${total}</div>
       <div class="q-card">
         <div class="expr-big">${r.a} ${E.SYM[r.op]} ${r.b} = ${w.shown ? `<span class="ans">${r.res}</span>` : '<span class="qm">?</span>'}</div>
-        ${CAN_SPEAK && w.shown ? `<button class="speak-btn" data-a="speak-fact" data-v="${w.idx}" aria-label="Ouvir">${icon('speaker', 22)}</button>` : ''}
+        ${CAN_SPEAK && w.shown ? speakBtn('speak-fact', w.idx, '', 'speak-btn') : ''}
       </div>
       ${w.shown ? explainHtml(r) : `${dotsHtml(E.explainFact(r).visual)}<p class="muted center big-p">Pense um pouquinho. Olhe as bolinhas!</p>`}
     </div>
@@ -241,7 +305,7 @@ function renderWalk() {
 function closeOverlay() {
   walk = null;
   studyNode = null;
-  if (CAN_SPEAK) window.speechSynthesis.cancel();
+  stopSpeak();
   $ov.innerHTML = '';
   document.body.classList.remove('lock');
   render();
@@ -250,24 +314,42 @@ function closeOverlay() {
 function walkApply() {
   const w = walk;
   walk = null;
-  if (CAN_SPEAK) window.speechSynthesis.cancel();
+  stopSpeak();
   if (w.then) w.then();
   else startNodeLesson(`${OP_UNIT[w.op]}-${w.n}`, true);
 }
 
 // ---------- Início de lições ----------
+// Passo da trilha do ano; tabuadas fora do ano viram um passo "avulso" do motor de contas
+function resolveNode(id) {
+  const n = C.findNode(YEAR(), id);
+  if (n) return n;
+  const g = E.nodeById(id);
+  return g ? { id: g.id, kind: 'gen', gen: g, title: g.title, icon: g.icon, skills: [], subj: 'ma', color: 'green', review: g.review } : null;
+}
 function lessonGo(id) {
-  const n = E.nodeById(id);
-  startSession({ kind: 'lesson', nodeId: id, title: n.title, questions: E.lessonQuestions(n), retry: true, help: true });
+  const n = resolveNode(id);
+  startSession({ kind: 'lesson', nodeId: id, title: n.title, questions: C.lessonQuestions(n), retry: true, help: n.kind === 'gen' });
 }
 function startNodeLesson(id, skipStudy = false) {
-  const n = E.nodeById(id);
-  if (n.review || skipStudy) return lessonGo(id);
+  const n = resolveNode(id);
+  if (!n) return;
+  if (skipStudy || (n.kind === 'gen' && n.review)) return lessonGo(id);
   closeModal();
   ui.pop = null;
   studyNode = n;
   document.body.classList.add('lock');
   renderStudy(n);
+}
+function checkMark(starsValue) {
+  const n = studyNode;
+  const res = E.markStudied(n.id, n.title, starsValue);
+  studyNode = null;
+  sfx.complete();
+  if (starsValue >= 3) confetti();
+  toast(starsValue >= 3 ? 'Muito bem! Marcado como aprendido.' : 'Anotado! Continue estudando.');
+  closeOverlay();
+  if (res.streakAfter > res.streakBefore) { after = []; document.body.classList.add('lock'); streakScreen(res.streakAfter); session = { ended: true, result: true }; }
 }
 
 // ---------- Desafios ----------
@@ -275,7 +357,7 @@ function renderChallenges() {
   const s = S();
   const dailyDone = s.daily[E.dayKey()];
   const weak = E.weakFacts(30).length;
-  const seen = E.seenNodes().length;
+  const seen = C.course(YEAR()).subjects.flatMap((x) => x.nodes).filter((n) => n.kind !== 'check' && E.stars(n.id) >= 1).length;
   const { chOp: op, chN: n, chMode: mode } = ui;
   const rec = E.record(mode, op, n);
   const recLabel = mode === 'quiz' ? (rec ? `Melhor: ${rec}/${n === 'all' ? 20 : 10}` : 'Ainda sem nota') : `Recorde: ${rec}`;
@@ -301,7 +383,7 @@ function renderChallenges() {
     ${card('daily', 'calendar', 'orange', 'Desafio do dia', '10 contas misturadas. Ganhe +20 XP.', dailyDone != null ? `Feito hoje: ${dailyDone}/10` : 'Novo desafio disponível', dailyDone != null ? 'Volte amanhã' : 'Jogar', dailyDone != null)}
     ${card('test', 'clipboard', 'purple', 'Teste de progresso', '2 contas de cada tabuada, sem ajuda. No final sai um boletim.', (() => { const t = s.tests.find((x) => x.op === ui.testOp); return t ? `Último: ${t.score}/${t.total}` : 'Ainda não fez'; })(), `Testar ${OP_NAME[ui.testOp].toLowerCase()}`, false,
       `<div class="seg mini">${OPS.map((o) => `<button class="${ui.testOp === o ? 'on' : ''}" data-a="test-op" data-v="${o}">${OP_SHORT[o]}</button>`).join('')}</div>`)}
-    ${card('surprise', 'shuffle', 'green', 'Revisão surpresa', 'Perguntas de tudo o que você já estudou na trilha.', seen ? `${seen} ${seen === 1 ? 'lição estudada' : 'lições estudadas'}` : 'Faça uma lição da trilha para liberar', 'Jogar', !seen)}
+    ${card('surprise', 'shuffle', 'green', 'Revisão surpresa', 'Perguntas de todas as matérias que você já estudou na trilha.', seen ? `${seen} ${seen === 1 ? 'lição estudada' : 'lições estudadas'}` : 'Faça uma lição da trilha para liberar', 'Jogar', !seen)}
     ${card('errors', 'target', 'blue', 'Treino dos erros', 'Pratique as contas que você mais erra.', weak ? `${weak} ${weak === 1 ? 'conta' : 'contas'} para treinar` : 'Nenhum erro para treinar', 'Treinar', !weak)}
   </div>`;
 }
@@ -321,7 +403,7 @@ function startChallenge(kind) {
     startSession({ kind, title: 'Desafio do dia', questions: E.dailyQuestions(), retry: false, help: true });
   }
   if (kind === 'surprise') {
-    const qs = E.surpriseQuestions();
+    const qs = C.surpriseQuestions(YEAR());
     if (!qs.length) return toast('Complete pelo menos uma lição na trilha primeiro.');
     startSession({ kind, title: 'Revisão surpresa', questions: qs, retry: true, help: true });
   }
@@ -362,11 +444,22 @@ function renderProgress() {
       ${barChart(week, (d) => d.xp, maxXp, (d) => WEEKDAY[d.date.getDay()])}
     </div>
   </div>
+  <h2 class="section-title">Matérias do ${YEAR()}º ano</h2>
+  ${subjectBars()}
   <h2 class="section-title">Minhas tabuadas</h2>
   ${gridPicker()}
   ${masteryGrid(ui.gridOp)}
   <h2 class="section-title">Conquistas</h2>
   <div class="ach-grid">${E.ACHIEVEMENTS.map((a) => `<div class="ach ${s.ach[a.id] ? 'on' : 'off'}"><span class="ach-ic">${icon('medal', 28)}</span><b>${a.title}</b><small>${a.desc}</small></div>`).join('')}</div>`;
+}
+
+function subjectBars() {
+  return `<div class="subj-bars">${C.course(YEAR()).subjects.map((sb) => {
+    const p = C.subjectProgress(YEAR(), sb.id);
+    return `<button class="subj-bar c-${sb.color}" data-a="go-subj" data-v="${sb.id}"><span class="sic">${subjGlyph(sb, 22)}</span>
+      <div class="grow"><div class="sb-top"><b>${sb.full}</b><small>${p.done}/${p.total} passos</small></div>
+      <div class="bar"><i style="width:${p.max ? (p.stars / p.max) * 100 : 0}%"></i></div></div></button>`;
+  }).join('')}</div>`;
 }
 
 const stat = (ic, color, val, label) => `<div class="stat"><span class="sic c-${color}">${icon(ic, 22)}</span><div><b>${val}</b><small>${label}</small></div></div>`;
@@ -436,7 +529,7 @@ function parentReport() {
   const accPill = (acc, n) => (n ? `<span class="pill ${acc >= 0.8 ? 'g' : acc >= 0.5 ? 'y' : 'r'}">${pct(acc)}</span>` : '<span class="pill n">—</span>');
   return `<div class="report-head"><div class="avatar lg">${initial()}</div><div class="grow"><h2>${esc(s.profile.name)}</h2>
     <span class="muted">${last ? `Último acesso: ${fmtDate(last.ts)}` : 'Ainda não fez nenhuma atividade'}</span></div>
-    <button class="btn blue sm" data-a="share">${icon('share', 20)} Relatório</button></div>
+    <div class="head-btns"><button class="btn blue sm" data-a="print-report">${icon('printer', 20)} PDF</button><button class="btn white sm" data-a="share">${icon('share', 20)} Texto</button></div></div>
   <h2 class="section-title">Resumo</h2>
   <div class="stats-grid wide">
     ${stat('flame', 'orange', `${E.streak()} <small>(rec. ${s.best.streak})</small>`, 'dias seguidos')}
@@ -446,9 +539,13 @@ function parentReport() {
     ${stat('book', 'green', t.l, 'atividades feitas')}
     ${stat('star', 'yellow', `${E.totalStars()}/${E.ALL_NODES.length * 3}`, 'estrelas')}
   </div>
+  <h2 class="section-title">Matérias do ${YEAR()}º ano</h2>
+  ${subjectBars()}
+  <h2 class="section-title">Habilidades da BNCC (${YEAR()}º ano)</h2>
+  ${skillsHtml(YEAR())}
   <div class="two-col">
     <div>
-      <h2 class="section-title">Por operação</h2>
+      <h2 class="section-title">Matemática por operação</h2>
       <div class="box"><table class="table">
         <tr><th>Operação</th><th class="r">Contas</th><th class="r">Acerto</th><th class="r">Tempo</th><th class="r">Estrelas</th></tr>
         ${OPS.map((op) => { const o = E.opStats(op); return `<tr><td>${OP_NAME[op]}</td><td class="r">${o.total}</td><td class="r">${accPill(o.acc, o.total)}</td><td class="r">${o.avgMs ? `${(o.avgMs / 1000).toFixed(1)}s` : '—'}</td><td class="r">${opStars(op)}</td></tr>`; }).join('')}
@@ -487,6 +584,8 @@ function parentReport() {
       <h2 class="section-title">Configurações</h2>
       <div class="box">
         <div class="setting"><div class="grow"><label for="nameInput">Nome da criança</label><input class="text-input" id="nameInput" maxlength="20" value="${esc(s.profile.name)}"></div></div>
+        <div class="setting col"><label>Ano escolar<small>Monta a trilha com as matérias desse ano</small></label>
+          <div class="year-pick">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => `<button class="${YEAR() === y ? 'on' : ''}" data-a="set-year" data-v="${y}">${y}º</button>`).join('')}</div></div>
         <div class="setting"><label>Meta diária<small>XP por dia</small></label><div class="seg">${[10, 20, 30, 50].map((g) => `<button class="${s.settings.goal === g ? 'on' : ''}" data-a="goal" data-v="${g}">${g}</button>`).join('')}</div></div>
         <div class="setting"><label>Sons e voz</label><button class="switch ${s.settings.sound ? 'on' : ''}" data-a="toggle" data-v="sound" aria-label="Sons"></button></div>
         <div class="setting"><label>Liberar todas as lições<small>Para pular o que a criança já sabe</small></label><button class="switch ${s.settings.unlockAll ? 'on' : ''}" data-a="toggle" data-v="unlockAll" aria-label="Liberar todas"></button></div>
@@ -505,6 +604,61 @@ function parentReport() {
     </div>
   </div>
   <input type="file" id="importFile" accept="application/json,.json" hidden>`;
+}
+
+const SKILL_LABEL = ['Não iniciada', 'Estudando', 'Aprendida'];
+function skillsHtml(year) {
+  const status = C.skillStatus(year);
+  return `<div class="skills-acc">${C.course(year).subjects.map((sb) => {
+    const codes = [...new Set(sb.nodes.flatMap((n) => n.skills || []))];
+    if (!codes.length) return '';
+    const learned = codes.filter((c) => status[c] === 2).length;
+    return `<details class="box"><summary><span class="sic c-${sb.color}">${subjGlyph(sb, 20)}</span><b>${sb.full}</b><span class="muted">${learned}/${codes.length} aprendidas</span></summary>
+      <table class="table">${codes.map((code) => { const st = status[code] || 0; const k = S().skills[code];
+        return `<tr><td><b>${code}</b><br><small class="muted">${esc(C.skillByCode(code)?.text || '')}</small></td><td class="r"><span class="pill ${['n', 'y', 'g'][st]}">${SKILL_LABEL[st]}</span>${k ? `<br><small class="muted">${k.c}/${k.c + k.w} certas</small>` : ''}</td></tr>`; }).join('')}</table></details>`;
+  }).join('')}</div>`;
+}
+
+// Relatório completo para imprimir ou salvar em PDF
+function printReport() {
+  const s = S();
+  const year = YEAR();
+  const t = E.totals();
+  const status = C.skillStatus(year);
+  const crs = C.course(year);
+  const subjRows = crs.subjects.map((sb) => {
+    const p = C.subjectProgress(year, sb.id);
+    const codes = [...new Set(sb.nodes.flatMap((n) => n.skills || []))];
+    return `<tr><td>${sb.full}</td><td class="r">${p.done}/${p.total}</td><td class="r">${p.stars}/${p.max}</td><td class="r">${codes.filter((c) => status[c] === 2).length}/${codes.length}</td></tr>`;
+  }).join('');
+  const skillRows = crs.subjects.map((sb) => {
+    const codes = [...new Set(sb.nodes.flatMap((n) => n.skills || []))];
+    if (!codes.length) return '';
+    return `<h3>${sb.full}</h3><table class="table">${codes.map((code) => `<tr><td><b>${code}</b> ${esc(C.skillByCode(code)?.text || '')}</td><td class="r nowrap">${SKILL_LABEL[status[code] || 0]}</td></tr>`).join('')}</table>`;
+  }).join('');
+  $ov.innerHTML = `<div class="screen report-screen"><div class="inner">
+    <div class="lesson-top no-print"><button class="icon-btn" data-a="study-close" aria-label="Fechar">${icon('x', 26)}</button><span class="grow"></span>
+      <button class="btn sm" data-a="do-print">${icon('printer', 20)} Imprimir / Salvar PDF</button></div>
+    <div class="report-doc">
+      <h1>Relatório de estudos — ${esc(s.profile.name)}</h1>
+      <p class="muted">${year}º ano · Ensino Fundamental · referência BNCC e rede municipal de Joinville · gerado em ${new Date().toLocaleString('pt-BR')}</p>
+      <h2>Resumo</h2>
+      <table class="table"><tr><td>Dias seguidos (recorde)</td><td class="r">${E.streak()} (${s.best.streak})</td></tr>
+        <tr><td>Tempo estudado</td><td class="r">${fmtDur(t.ms)}</td></tr>
+        <tr><td>Perguntas respondidas</td><td class="r">${t.q} (${pct(t.q ? t.c / t.q : null)} de acerto)</td></tr>
+        <tr><td>Atividades feitas</td><td class="r">${t.l}</td></tr>
+        <tr><td>XP total</td><td class="r">${s.xp}</td></tr></table>
+      <h2>Por matéria</h2>
+      <table class="table"><tr><th>Matéria</th><th class="r">Passos</th><th class="r">Estrelas</th><th class="r">Habilidades aprendidas</th></tr>${subjRows}</table>
+      <h2>Contas que mais erra</h2>
+      ${E.weakFacts(10).length ? `<table class="table">${E.weakFacts(10).map((w) => `<tr><td>${esc(w.label)}</td><td class="r">${w.w} erro(s) em ${w.c + w.w}</td></tr>`).join('')}</table>` : '<p>Nenhum erro registrado.</p>'}
+      <h2>Habilidades da BNCC</h2>
+      ${skillRows}
+      <h2>Últimas atividades</h2>
+      <table class="table">${s.log.slice(0, 25).map((l) => `<tr><td>${fmtDate(l.ts)}</td><td>${esc(l.title)}</td><td class="r">${l.total ? `${l.score}/${l.total}` : l.score}</td></tr>`).join('')}</table>
+    </div>
+  </div></div>`;
+  document.body.classList.add('lock');
 }
 
 function reportText() {
@@ -653,7 +807,7 @@ function renderSession() {
     </div>
     <div class="lesson-body">
       ${badges ? `<div class="badges">${badges}</div>` : ''}
-      <div class="q-row"><h2 class="q-title">${q.title}</h2>${s.help && s.phase === 'ask' ? `<button class="help-btn" data-a="help">${icon('bulb', 20)} Ajuda</button>` : ''}</div>
+      <div class="q-row"><h2 class="q-title">${q.title}</h2>${s.help && q.op && s.phase === 'ask' ? `<button class="help-btn" data-a="help">${icon('bulb', 20)} Ajuda</button>` : ''}</div>
       ${questionCard(q)}
       ${answerArea(q)}
     </div>
@@ -665,7 +819,7 @@ function questionCard(q) {
   const textual = q.kind === 'story' || q.kind === 'visual';
   const content = textual ? `<p class="story">${esc(q.text)}</p>`
     : `<div class="expr-big">${esc(q.text).replace('?', '<span class="qm">?</span>')}</div>`;
-  return `<div class="q-card">${content}</div>${q.kind === 'visual' ? dotsHtml(q.visual) : ''}`;
+  return `${q.passage ? `<div class="passage">${esc(q.passage)}</div>` : ''}<div class="q-card">${content}</div>${q.kind === 'visual' ? dotsHtml(q.visual) : ''}`;
 }
 
 function answerArea(q) {
@@ -676,7 +830,8 @@ function answerArea(q) {
     return `<div class="answer-zone"><div class="answer-box ${cls}">${s.input || '?'}</div>${fb ? '' : keypadHtml('ans')}</div>`;
   }
   const opts = q.mode === 'tf' ? [[true, 'Verdadeiro'], [false, 'Falso']] : q.options.map((o) => [o, String(o)]);
-  return `<div class="choices ${q.mode === 'tf' ? 'tf' : ''}">${opts.map(([v, label], i) => {
+  const long = opts.some(([, label]) => label.length > 7);
+  return `<div class="choices ${q.mode === 'tf' ? 'tf' : ''} ${long ? 'text-opts' : ''}">${opts.map(([v, label], i) => {
     let cls = '';
     if (fb) {
       if (v === q.answer) cls = 'right';
@@ -704,7 +859,7 @@ function sessionFoot() {
 
 function showHelp() {
   const s = session;
-  if (!s || s.phase !== 'ask' || !s.help) return;
+  if (!s || s.phase !== 'ask' || !s.help || !s.q.op) return;
   const h = E.hintFor(s.q);
   s.q._helped = true;
   sfx.tap();
@@ -731,7 +886,7 @@ function check() {
   const ok = v === q.answer;
   const ms = Date.now() - s.qStart;
   s.activeMs += Math.min(ms, 60000);
-  E.recordAnswer(q, ok, ms);
+  if (q.key) E.recordAnswer(q, ok, ms); else E.recordSkill(q.skill, ok);
   s.lastOk = ok;
   s.answered++;
   if (ok) {
@@ -777,8 +932,8 @@ function endSession() {
   let extra = '';
   const record = '<p class="record">Novo recorde!</p>';
   if (s.kind === 'lesson') {
-    const node = E.nodeById(s.nodeId);
-    xp = (node.review ? 15 : 10) + (perfect ? 5 : 0);
+    const node = resolveNode(s.nodeId);
+    xp = (node?.review ? 15 : 10) + (perfect ? 5 : 0);
     if (perfect) sub = 'Sem nenhum erro! +5 XP de bônus';
   }
   if (s.kind === 'surprise') headline = 'Revisão concluída!';
@@ -875,10 +1030,12 @@ function renderOnboarding() {
   $ov.innerHTML = `<div class="screen"><div class="inner">
     <div class="onb">
       <div class="logo">${['+', '−', '×', '÷'].map((o, i) => `<span class="c-${['purple', 'orange', 'green', 'blue'][i]}">${o}</span>`).join('')}</div>
-      <h1>Tabuada</h1>
-      <p class="muted big-p">Vamos aprender a somar, tirar, multiplicar e dividir!</p>
+      <h1>Aprender Bia</h1>
+      <p class="muted big-p">Estudos do ensino fundamental, com o que se aprende nas escolas de Joinville.</p>
       <label class="field"><span>Qual é o seu nome?</span>
         <input class="text-input" id="onbName" maxlength="20" placeholder="Seu nome" value="${esc(ui.onbName)}" autocomplete="off"></label>
+      <div class="field"><span>Em que ano você está?</span>
+        <div class="year-pick">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => `<button class="${ui.onbYear === y ? 'on' : ''}" data-a="onb-year" data-v="${y}">${y}º</button>`).join('')}</div></div>
       <div class="field"><span>Meta por dia</span>
         <div class="seg">${[[10, 'Leve'], [20, 'Normal'], [30, 'Puxada'], [50, 'Intensa']].map(([g, l]) => `<button class="${ui.onbGoal === g ? 'on' : ''}" data-a="onb-goal" data-v="${g}">${l}<small>${g} XP</small></button>`).join('')}</div></div>
     </div>
@@ -895,7 +1052,7 @@ function renderOnboarding() {
 function showModal(html) {
   $modal.innerHTML = `<div class="modal-bg" data-a="modal-bg"><div class="modal" role="dialog">${html}</div></div>`;
 }
-function closeModal() { $modal.innerHTML = ''; }
+function closeModal() { $modal.innerHTML = ''; stopSpeak(); }
 let toastT;
 function toast(msg) {
   document.querySelector('.toast')?.remove();
@@ -941,22 +1098,25 @@ document.addEventListener('click', (ev) => {
   if (!a) return;
   switch (a) {
     case 'tab':
-      ui.tab = v; ui.pop = null;
+      stopSpeak(); ui.tab = v; ui.pop = null;
       if (v !== 'parents') { ui.parentOk = false; ui.pin = ''; }
       sfx.tap(); render(); scrollTo(0, 0); break;
     case 'node': ui.pop = ui.pop === v ? null : v; sfx.tap(); render(); break;
     case 'start': startNodeLesson(v); break;
     case 'study-go': lessonGo(studyNode.id); break;
-    case 'study-walk': { const n = studyNode; startWalk(n.op, n.n, () => lessonGo(n.id)); break; }
+    case 'study-walk': { const n = studyNode; startWalk(n.gen.op, n.gen.n, () => lessonGo(n.id)); break; }
+    case 'check-mark': checkMark(Number(v)); break;
+    case 'go-subj': ui.tab = 'learn'; ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
+    case 'subj': ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
     case 'study-close': closeOverlay(); break;
     case 'table-op': ui.tableOp = v; sfx.tap(); render(); break;
     case 'table-open': openTable(Number(v)); break;
-    case 'table-speak': speak(E.tableRows(ui.tableOp, Number(v)).map(E.speakText).join('. ')); break;
+    case 'table-speak': toggleSpeak(E.tableRows(ui.tableOp, Number(v)).map(E.speakText)); break;
     case 'table-quiz': startTableChallenge(ui.tableOp, Number(v), 'quiz'); break;
-    case 'speak-fact': if (walk) speak(E.speakText(walk.rows[Number(v)])); break;
+    case 'speak-fact': if (walk) toggleSpeak(E.speakText(walk.rows[Number(v)])); break;
     case 'walk-start': startWalk(ui.tableOp, Number(v), null); break;
     case 'walk-next': walkNext(); break;
-    case 'walk-prev': if (walk && walk.idx > 0) { walk.idx--; walk.shown = true; renderWalk(); } break;
+    case 'walk-prev': if (walk && walk.idx > 0) { stopSpeak(); walk.idx--; walk.shown = true; renderWalk(); } break;
     case 'walk-close': closeOverlay(); break;
     case 'walk-again': walk.idx = 0; walk.shown = false; renderWalk(); break;
     case 'walk-apply': walkApply(); break;
@@ -1012,11 +1172,16 @@ document.addEventListener('click', (ev) => {
     case 'reset-confirm': E.resetAll(true); closeModal(); toast('Progresso zerado'); render(); break;
     case 'fact': factDetail(v); break;
     case 'onb-goal': ui.onbGoal = Number(v); sfx.tap(); renderOnboarding(); break;
+    case 'onb-year': ui.onbYear = Number(v); sfx.tap(); renderOnboarding(); break;
+    case 'set-year': S().profile.year = Number(v); E.save(); ui.subj = 'all'; toast(`Trilha do ${v}º ano`); render(); break;
+    case 'print-report': printReport(); break;
+    case 'do-print': window.print(); break;
     case 'onb-done': {
       if (!ui.onbName.trim()) return;
       const st = S();
       st.profile.name = ui.onbName.trim().slice(0, 20);
       st.settings.goal = ui.onbGoal;
+      st.profile.year = ui.onbYear;
       st.created = Date.now();
       E.save();
       $ov.innerHTML = '';
@@ -1077,7 +1242,8 @@ document.addEventListener('keydown', (ev) => {
 });
 
 // ---------- Inicialização ----------
-render();
+if (!S().profile.year) S().profile.year = 3;
+C.loadBncc().then(render);
 if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
 if ('serviceWorker' in navigator && window.isSecureContext) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});

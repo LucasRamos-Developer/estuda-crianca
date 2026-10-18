@@ -1,7 +1,7 @@
 {
-  "name": "Tabuada",
-  "short_name": "Tabuada",
-  "description": "Aprenda tabuada, adição, subtração, multiplicação e divisão brincando.",
+  "name": "Aprender Bia",
+  "short_name": "Aprender Bia",
+  "description": "Estudos do ensino fundamental (1º ao 9º ano) com base na BNCC e na rede de Joinville.",
   "lang": "pt-BR",
   "id": "./",
   "start_url": "./",

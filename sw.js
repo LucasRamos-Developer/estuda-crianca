@@ -1,6 +1,6 @@
 // Service worker: deixa o app 100% offline.
 // IMPORTANTE: ao alterar qualquer arquivo do app, aumente a versão abaixo.
-const CACHE = 'tabuada-v3';
+const CACHE = 'aprender-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,9 @@ const ASSETS = [
   './js/engine.js',
   './js/fx.js',
   './js/icons.js',
+  './js/curriculum.js',
+  './js/content/ano3.js',
+  './data/bncc.json',
   './fonts/nunito.woff2',
   './icons/icon.svg',
   './icons/icon-192.png',

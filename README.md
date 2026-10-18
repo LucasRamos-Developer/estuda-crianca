@@ -1,63 +1,62 @@
-# Tabuada
+# Aprender Bia
 
-PWA simples para crianças (3º ano) aprenderem as tabuadas de **somar, tirar, multiplicar e dividir do 1 ao 9**,
-com visual inspirado no Duolingo. Funciona no celular, tablet e computador, e **offline** depois do primeiro acesso
-(quando publicado em HTTPS, como no GitHub Pages).
+App de estudos (PWA) para o **ensino fundamental, do 1º ao 9º ano**, com base na **BNCC** e no que é ensinado
+na rede de **Joinville (SC)**. Visual inspirado no Duolingo. Funciona no celular, tablet e computador, e **offline**
+depois do primeiro acesso (quando publicado em HTTPS, como no GitHub Pages).
+
+Site: https://lucasramos-developer.github.io/estuda-crianca/
 
 ## Como funciona
 
-- **Trilha**: 4 unidades de tabuada (+, −, ×, ÷) e uma unidade de contas maiores de subtração.
-  Cada lição **mostra a tabuada** e depois a criança **responde**. Tem 3 níveis: Aprender, Fixação e Domínio.
-- **Tabuada**: escolha a operação e o número para ver a tabuada simples.
-  1. **Veja** (ou ouça em voz alta), 2. **Aprenda** conta por conta com bolinhas e explicação, 3. **Responda** a lição.
-  O botão *Esconder* oculta os resultados para a criança testar a memória.
-- **Ajuda** em cada pergunta: dicas de como fazer a conta (contar nos dedos, completar o 10, dobro, truque do 9, conta armada…).
-- **Desafios**: Desafio do dia, Revisão surpresa, Teste de progresso (gera um boletim por tabuada),
-  Contra o relógio, Sobrevivência, Mestre da tabuada e Treino dos erros.
-- **Progresso**: sequência de dias, XP, conquistas e mapa das tabuadas.
-- **Pais** (com PIN): resumo, acerto por operação, gráfico de 14 dias, contas com mais erros, mapa de domínio,
-  testes de progresso, histórico, relatório para WhatsApp, backup e configurações.
+- No primeiro acesso, a criança informa o nome e **o ano escolar**. A trilha é montada para esse ano
+  (dá para trocar depois em *Pais → Configurações*).
+- **Trilha "Tudo"**: um passo de cada matéria, em sequência. **Trilha por matéria**: Português, Matemática,
+  Ciências, História, Geografia, Arte, Educação Física, Inglês e Ensino Religioso. O progresso é o mesmo nas duas.
+- Cada passo mostra uma **explicação curta** e depois **perguntas**. Cada passo tem 3 níveis (estrelas).
+- **3º ano**: conteúdo completo escrito para todas as matérias, ligado aos códigos da BNCC,
+  com História e Geografia de Joinville e Inglês dos anos iniciais (rede municipal).
+- **Outros anos**: os passos usam as habilidades da BNCC para estudo e auto-avaliação ("Ainda estou aprendendo" /
+  "Já sei"), mais treino de contas na Matemática dos anos iniciais. Perguntas escritas serão adicionadas aos poucos.
+- **Tabuada**: as tabuadas de somar, tirar, multiplicar e dividir para ver, ouvir e aprender conta por conta.
+- **Desafios**: desafio da tabuada (perguntas, 1 minuto, 3 vidas), desafio do dia, teste de progresso (boletim),
+  revisão surpresa de todas as matérias e treino dos erros.
+- **Pais** (com PIN criado no primeiro acesso): progresso por matéria, situação de cada habilidade da BNCC,
+  relatório para **imprimir / salvar em PDF**, relatório em texto (WhatsApp), **backup em JSON** e configurações.
 
-O progresso fica salvo **no aparelho** (localStorage). Use *Pais → Exportar backup* para guardar ou trocar de aparelho.
+O progresso fica salvo **no aparelho**. Use *Pais → Exportar backup* para guardar ou trocar de aparelho.
 
-## Rodar na rede local (celular, tablet e PC na mesma Wi-Fi)
+## Rodar na rede local
 
 ```bash
 ./serve.sh          # porta 8080
-./serve.sh 3000     # outra porta
 ```
 
-O script mostra o endereço para abrir nos outros aparelhos, por exemplo `http://192.168.1.2:8080`.
-Se não abrir, libere a porta no firewall do computador (ex.: `sudo ufw allow 8080`).
+O script mostra o endereço para abrir em outros aparelhos da mesma Wi-Fi.
+Pela rede local (http) o modo offline e o "instalar" não funcionam; no GitHub Pages (https) funciona tudo.
 
-> Pela rede local (http) o app funciona normalmente, mas o modo offline e o "instalar na tela inicial"
-> só funcionam em `localhost` ou em HTTPS. Para ter tudo, use o GitHub Pages.
+## Publicar
 
-## Publicar no GitHub Pages
-
-1. Faça commit e push dos arquivos para o branch `main`.
-2. No GitHub: **Settings → Pages → Build and deployment → Source: Deploy from a branch → `main` / `(root)`** → Save.
-3. Em ~1 minuto o app estará em `https://<seu-usuario>.github.io/app-matematica/`.
-4. No celular ou tablet, abra o link e use **"Adicionar à tela inicial"** para instalar como app.
-
-## Atualizando o app
-
-O service worker (`sw.js`) guarda os arquivos para funcionar offline.
-**Sempre que mudar algum arquivo, aumente a versão** em `sw.js` (`tabuada-v3` → `tabuada-v4`),
-senão os aparelhos continuam com a versão antiga. A nova versão aparece ao abrir o app pela segunda vez.
+Push na `main` → o GitHub Pages publica sozinho. **Ao mudar qualquer arquivo, aumente a versão do cache** em `sw.js`
+(`aprender-v1` → `aprender-v2`), senão os aparelhos continuam com a versão antiga.
 
 ## Estrutura
 
 ```
-index.html             página principal
-manifest.webmanifest   dados do app instalável
-sw.js                  cache offline
-serve.sh               servidor para a rede local
+index.html, manifest.webmanifest, sw.js, serve.sh
 css/style.css          visual (celular, tablet e computador)
 js/app.js              telas e interação
-js/engine.js           tabuadas, gerador de perguntas, explicações, dicas, progresso e conquistas
-js/icons.js            ícones em SVG
-js/fx.js               sons (WebAudio) e confete
-fonts/nunito.woff2     fonte Nunito (SIL Open Font License)
-icons/                 ícones do app
+js/curriculum.js       monta as trilhas por ano e matéria
+js/content/ano3.js     conteúdo escrito do 3º ano (explicações e perguntas)
+js/engine.js           contas geradas, progresso, conquistas
+data/bncc.json         1304 habilidades da BNCC do ensino fundamental (código, anos, texto)
+js/icons.js, js/fx.js  ícones e sons
 ```
+
+Para adicionar conteúdo de outro ano: crie `js/content/anoN.js` no mesmo formato do `ano3.js`
+e registre em `AUTHORED` dentro de `js/curriculum.js`.
+
+## Fontes
+
+- Base Nacional Comum Curricular (BNCC), MEC — versão final de 2018.
+- Currículo Base da Educação Infantil e do Ensino Fundamental do Território Catarinense (2019).
+- Currículo da rede municipal de ensino de Joinville.
