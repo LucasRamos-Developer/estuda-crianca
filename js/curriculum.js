@@ -1,6 +1,5 @@
 // Trilhas por ano e por matéria (BNCC + conteúdo escrito para Joinville).
 import * as E from './engine.js';
-import ano3 from './content/ano3.js';
 
 export const SUBJECTS = [
   { id: 'ma', comp: 'MA', name: 'Matemática', full: 'Matemática', color: 'green', glyph: '123' },
@@ -18,15 +17,38 @@ export const subjectById = (id) => SUBJECTS.find((s) => s.id === id);
 export const MAIN = ['ma', 'lp'];
 export const isGeral = (id) => !MAIN.includes(id);
 
-const AUTHORED = { 3: ano3 };
+// Conteúdo escrito por ano, carregado de data/conteudo/anoN.json (atualizável sem mexer no código)
+const AUTHORED = {};
+const cache = {};
+async function getJson(url) {
+  const res = await fetch(url, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`${url}: ${res.status}`);
+  return res.json();
+}
+export async function loadContent(year) {
+  if (year in AUTHORED) return AUTHORED[year];
+  try {
+    const data = await getJson(`./data/conteudo/ano${year}.json`);
+    AUTHORED[year] = data.materias || null;
+  } catch { AUTHORED[year] = null; }
+  delete cache[year];
+  return AUTHORED[year];
+}
+
+// Curiosidades (data/curiosidades.json)
+let CURIOS = { fontes: [] };
+export async function loadCurios() {
+  try { CURIOS = await getJson('./data/curiosidades.json'); } catch { /* sem curiosidades offline na 1ª vez */ }
+  return CURIOS;
+}
+export const curios = () => CURIOS;
 
 // ---------- BNCC ----------
 let BNCC = [];
 export async function loadBncc() {
   if (BNCC.length) return BNCC;
   try {
-    const res = await fetch('./data/bncc.json');
-    BNCC = (await res.json()).map(([code, comp, years, text]) => ({ code, comp, years: years.split('').map(Number), text }));
+    BNCC = (await getJson('./data/bncc.json')).map(([code, comp, years, text]) => ({ code, comp, years: years.split('').map(Number), text }));
   } catch { BNCC = []; }
   return BNCC;
 }
@@ -39,7 +61,6 @@ const short = (t, n = 46) => {
 };
 
 // ---------- Montagem da trilha ----------
-const cache = {};
 export function course(year) {
   if (cache[year]) return cache[year];
   const authored = AUTHORED[year] || {};

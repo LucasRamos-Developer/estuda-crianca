@@ -30,6 +30,7 @@ const subjGlyph = (s, size = 26) => (s.icon ? icon(s.icon, size) : `<span class=
 const initial = () => esc((S().profile.name || '?').trim().charAt(0).toUpperCase());
 
 const ui = {
+  curio: {}, curioText: {}, curioSubj: 'all',
   subj: 'ma',
   tab: 'learn', pop: null, parentOk: false, pin: '', pinStep: null, pinFirst: '',
   testOp: 'mul', gridOp: 'mul', tableOp: 'mul',
@@ -67,7 +68,7 @@ function nav() {
     btn('data-a="subj" data-v="lp"', onLearn && ui.subj === 'lp', `<span class="nav-glyph">Aa</span>`, 'Português'),
     btn('data-a="subj" data-v="geral"', onGeral, icon('layers', 26), 'Outros'),
     btn('data-a="tab" data-v="challenges"', ui.tab === 'challenges', icon('bolt', 26), 'Desafios'),
-    btn('data-a="tab" data-v="config"', ['config', 'progress', 'parents'].includes(ui.tab), icon('gear', 26), 'Configurações'),
+    btn('data-a="tab" data-v="config"', ['config', 'progress', 'parents', 'curios'].includes(ui.tab), icon('gear', 26), 'Configurações'),
   ];
   // No computador: filtros da trilha Geral no menu lateral
   const crs = C.course(YEAR());
@@ -78,7 +79,7 @@ function nav() {
   return `<nav class="nav"><div class="brand">Estuda Criança</div>${main.join('')}${geral}</nav>`;
 }
 
-const TABS = { config: renderConfig, learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
+const TABS = { curios: renderCurios, config: renderConfig, learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
 
 // ---------- Trilha ----------
 const OFFSETS = [0, 44, 66, 44, 0, -44, -66, -44];
@@ -91,8 +92,46 @@ function renderLearn() {
   const cur = crs.subjects.find((s) => s.id === ui.subj);
   const prog = C.subjectProgress(year, cur.id);
   const head = `<div class="main-head c-${cur.color}"><div><small>${year}º ano · trilha principal</small><h1>${cur.full}</h1><p class="muted">${prog.done}/${prog.total} passos feitos</p></div></div>${cur.id === 'ma' ? mathTabs('trail') : ''}`;
-  return `${head}${unitsHtml(year, cur)}
+  return `${head}${curioCard([cur.id], cur.id)}${unitsHtml(year, cur)}
     ${cur.authored || cur.id === 'ma' ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
+}
+
+// ---------- Curiosidades ("Você sabia?") ----------
+const curioList = (ids) => ids.flatMap((id) => (C.curios()[id] || []).map((text) => ({ subj: id, text })));
+
+function curioCard(ids, key) {
+  const list = curioList(ids);
+  if (!list.length) return '';
+  if (ui.curio[key] == null) ui.curio[key] = Math.floor(Math.random() * list.length);
+  const c = list[ui.curio[key] % list.length];
+  ui.curioText[key] = c.text;
+  const sb = C.subjectById(c.subj);
+  return `<div class="curio c-yellow">
+    <div class="curio-top"><span class="sic">${icon('bulb', 22)}</span><b>Você sabia?</b><small>${sb.full}</small></div>
+    <p>${esc(c.text)}</p>
+    <div class="curio-btns">
+      ${CAN_SPEAK ? speakBtn('curio-speak', key, 'Ouvir', 'btn white sm') : ''}
+      <button class="btn white sm" data-a="curio-next" data-v="${key}">${icon('refresh', 18)} Outra</button>
+      <button class="btn ghost sm" data-a="curio-all" data-v="${ids.length === 1 ? ids[0] : 'all'}">Ver todas</button>
+    </div>
+  </div>`;
+}
+
+function renderCurios() {
+  const crs = C.course(YEAR());
+  const ids = crs.subjects.map((sb) => sb.id).filter((id) => C.curios()[id]);
+  const f = ui.curioSubj;
+  const list = curioList(f === 'all' ? ids : [f]);
+  return `${backConfig()}<h1 class="page-title">Curiosidades</h1>
+  <p class="muted" style="margin:-8px 0 14px">Você sabia? Fatos curiosos de todas as matérias.</p>
+  <div class="subj-chips">
+    <button class="subj-chip c-yellow ${f === 'all' ? 'on' : ''}" data-a="curio-filter" data-v="all">${icon('bulb', 20)}<span>Todas</span></button>
+    ${ids.map((id) => { const sb = C.subjectById(id); return `<button class="subj-chip c-${sb.color} ${f === id ? 'on' : ''}" data-a="curio-filter" data-v="${id}">${subjGlyph(sb, 20)}<span>${sb.name}</span></button>`; }).join('')}
+  </div>
+  <div class="curio-grid">${list.map((c) => { const sb = C.subjectById(c.subj); return `<div class="curio-item c-${sb.color}"><span class="sic">${subjGlyph(sb, 20)}</span><p>${esc(c.text)}</p></div>`; }).join('')}</div>
+  <h2 class="section-title">Para saber mais</h2>
+  <p class="muted small" style="margin-bottom:10px">Sites cheios de curiosidades e experiências para explorar junto com um adulto:</p>
+  <div class="btn-col">${(C.curios().fontes || []).map((src) => `<a class="btn white" href="${src.url}" target="_blank" rel="noopener">${esc(src.name)}</a>`).join('')}</div>`;
 }
 
 // Abas da Matemática: Trilha | Tabuada
@@ -123,10 +162,10 @@ function renderGeral(year, crs) {
   const fp = filter ? C.subjectProgress(year, filter.id) : null;
   const head = `<div class="main-head c-green"><div><small>${year}º ano · outras matérias</small><h1>Outros</h1><p class="muted">${filter ? `${filter.full}: ${fp.done}/${fp.total} passos` : `Ciências, História, Geografia, Arte e mais · ${done}/${crs.geral.length} passos`}</p></div></div>`;
   if (filter) {
-    return `${head}${chips}${unitsHtml(year, filter)}
+    return `${head}${chips}${curioCard([filter.id], filter.id)}${unitsHtml(year, filter)}
       ${filter.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
   }
-  return `${head}${chips}
+  return `${head}${chips}${curioCard(others.map((o) => o.id), 'outros')}
     <div class="unit-banner c-green"><div><small>${year}º ano · todas as outras matérias</small><h2>Um passo de cada matéria</h2><p>${done}/${crs.geral.length} passos feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
     <div class="path">${pathNodes(year, crs.geral, true)}</div>`;
 }
@@ -467,9 +506,16 @@ function renderConfig() {
   const item = (attrs, ic, color, title, desc, right = icon('right', 22)) => `<button class="cfg-item" ${attrs}>
     <span class="sic c-${color}">${icon(ic, 22)}</span><div class="grow"><b>${title}</b><small>${desc}</small></div>${right}</button>`;
   return `<h1 class="page-title">Configurações</h1>
+  <div class="box cfg-profile">
+    <label for="nameInput">Nome</label>
+    <input class="text-input" id="nameInput" maxlength="20" value="${esc(s.profile.name)}" autocomplete="off">
+    <label>Ano escolar <small>as trilhas mudam para o ano escolhido</small></label>
+    <div class="year-pick">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => `<button class="${YEAR() === y ? 'on' : ''}" data-a="set-year" data-v="${y}">${y}º</button>`).join('')}</div>
+  </div>
   <div class="cfg-list">
     ${item('data-a="tab" data-v="progress"', 'chart', 'blue', 'Meu progresso', 'Estatísticas, matérias, tabuadas e conquistas')}
     ${item('data-a="tab" data-v="parents"', 'lock', 'purple', 'Área dos pais', 'Relatório, PDF, ano escolar, backup e PIN')}
+    ${item('data-a="curio-all" data-v="all"', 'bulb', 'yellow', 'Curiosidades', 'Você sabia? Fatos curiosos de todas as matérias')}
     ${item('data-a="toggle" data-v="sound"', 'speaker', 'orange', 'Sons e voz', s.settings.sound ? 'Ligados' : 'Desligados', `<span class="switch ${s.settings.sound ? 'on' : ''}"></span>`)}
   </div>
   <h2 class="section-title">Sobre o app</h2>
@@ -1168,6 +1214,10 @@ document.addEventListener('click', (ev) => {
     case 'check-mark': checkMark(Number(v)); break;
     case 'go-subj': ui.tab = 'learn'; ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
     case 'subj': ui.subj = v; ui.tab = 'learn'; ui.pop = null; closeModal(); sfx.tap(); render(); scrollTo(0, 0); break;
+    case 'curio-next': ui.curio[v] = (ui.curio[v] ?? 0) + 1; stopSpeak(); sfx.tap(); render(); break;
+    case 'curio-speak': toggleSpeak(ui.curioText[v] || ''); break;
+    case 'curio-all': ui.curioSubj = v; ui.tab = 'curios'; stopSpeak(); sfx.tap(); render(); scrollTo(0, 0); break;
+    case 'curio-filter': ui.curioSubj = v; sfx.tap(); render(); break;
     case 'pick-subj': ui.tab = 'learn'; ui.subj = 'geral'; render(); break;
     case 'study-close': closeOverlay(); break;
     case 'table-op': ui.tableOp = v; sfx.tap(); render(); break;
@@ -1234,7 +1284,7 @@ document.addEventListener('click', (ev) => {
     case 'fact': factDetail(v); break;
     case 'onb-goal': ui.onbGoal = Number(v); sfx.tap(); renderOnboarding(); break;
     case 'onb-year': ui.onbYear = Number(v); sfx.tap(); renderOnboarding(); break;
-    case 'set-year': S().profile.year = Number(v); E.save(); ui.subj = 'ma'; toast(`Trilha do ${v}º ano`); render(); break;
+    case 'set-year': S().profile.year = Number(v); E.save(); ui.subj = 'ma'; C.loadContent(Number(v)).then(() => { toast(`Trilhas do ${v}º ano`); render(); }); break;
     case 'print-report': printReport(); break;
     case 'do-print': window.print(); break;
     case 'onb-done': {
@@ -1247,7 +1297,7 @@ document.addEventListener('click', (ev) => {
       E.save();
       $ov.innerHTML = '';
       sfx.complete();
-      render();
+      C.loadContent(st.profile.year).then(render);
       break;
     }
     default: break;
@@ -1304,7 +1354,7 @@ document.addEventListener('keydown', (ev) => {
 
 // ---------- Inicialização ----------
 if (!S().profile.year) S().profile.year = 3;
-C.loadBncc().then(render);
+Promise.all([C.loadBncc(), C.loadContent(YEAR()), C.loadCurios()]).then(render);
 if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
 if ('serviceWorker' in navigator && window.isSecureContext) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});

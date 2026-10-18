@@ -43,7 +43,44 @@ Pela rede local (http) o modo offline e o "instalar" não funcionam; no GitHub P
 ## Publicar
 
 Push na `main` → o GitHub Pages publica sozinho. **Ao mudar qualquer arquivo, aumente a versão do cache** em `sw.js`
-(`estuda-v5` → `estuda-v6`), senão os aparelhos continuam com a versão antiga.
+(`estuda-v8` → `estuda-v9`), senão os aparelhos continuam com a versão antiga.
+
+## Atualizar o conteúdo (JSON)
+
+Todo o conteúdo fica em arquivos JSON, separados do código. Dá para atualizar com uma rotina própria:
+
+```
+data/bncc.json                 habilidades da BNCC: [código, componente, anos, texto]
+data/curiosidades.json         "Você sabia?": { "versao", "fontes": [...], "ma": [textos], "lp": [...], ... }
+data/conteudo/anoN.json        trilhas escritas do N-ésimo ano: { "ano": N, "versao", "materias": { "ma": [unidades], ... } }
+```
+
+Formato de uma unidade em `materias`:
+
+```json
+{ "unit": "Título da unidade", "nodes": [
+  { "id": "y3-ci-7", "title": "Título do passo", "skills": ["EF03CI01"],
+    "intro": "Explicação curta.", "points": ["Ponto 1", "Ponto 2"], "example": "opcional", "passage": "texto para leitura (opcional)",
+    "q": [ ["Pergunta?", ["resposta certa", "errada 1", "errada 2", "errada 3"], "explicação opcional"],
+           ["Afirmação.", ["Verdadeiro", "Falso"]] ] }
+] }
+```
+
+- A **resposta certa vem sempre primeiro**; o app embaralha as alternativas.
+- Matérias: `ma`, `lp`, `ci`, `hi`, `ge`, `ar`, `ef`, `li`, `er`. Na Matemática, `{ "gen": "mul-3" }` usa uma tabuada gerada.
+- Para criar o conteúdo de outro ano, basta adicionar `data/conteudo/anoN.json` (o app usa a BNCC enquanto o arquivo não existir).
+
+Rotina sugerida:
+
+```bash
+node tools/validar-conteudo.mjs     # confere formato, ids, códigos BNCC e perguntas (sai com erro se algo estiver errado)
+git add data && git commit -m "Atualiza conteúdo" && git push
+```
+
+**Offline:** os JSON usam "rede primeiro" no service worker. Com internet, o app pega a versão nova; sem internet, usa a
+última cópia salva. Por isso, **atualizar JSON não exige mudar a versão do cache**. Só mude `CACHE` em `sw.js` quando alterar
+HTML, CSS, JS ou ícones. Se criar um novo `anoN.json`, adicione-o também na lista `DATA` do `sw.js` para ele já ficar salvo
+na primeira visita.
 
 ## Estrutura
 
@@ -52,14 +89,12 @@ index.html, manifest.webmanifest, sw.js, serve.sh
 css/style.css          visual (celular, tablet e computador)
 js/app.js              telas e interação
 js/curriculum.js       monta as trilhas por ano e matéria
-js/content/ano3.js     conteúdo escrito do 3º ano (explicações e perguntas)
 js/engine.js           contas geradas, progresso, conquistas
-data/bncc.json         1304 habilidades da BNCC do ensino fundamental (código, anos, texto)
+data/                  conteúdo em JSON (BNCC, curiosidades, trilhas por ano)
+tools/                 validar-conteudo.mjs
 js/icons.js, js/fx.js  ícones e sons
 ```
 
-Para adicionar conteúdo de outro ano: crie `js/content/anoN.js` no mesmo formato do `ano3.js`
-e registre em `AUTHORED` dentro de `js/curriculum.js`.
 
 ## Fontes
 

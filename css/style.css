@@ -705,7 +705,9 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 .math-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg2); border: 2px solid var(--line); border-radius: 16px; padding: 5px; margin: 4px 0 20px; }
 .math-tabs button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 12px; font-size: 16px; color: var(--muted); }
 .math-tabs button.on { background: var(--c); color: #fff; box-shadow: 0 3px 0 var(--d); }
-@media (min-width: 700px) { .math-tabs { max-width: 420px; } }
+.math-tabs { width: 100%; }
+.math-tabs button { padding: 13px 10px; font-size: 17px; }
+@media (min-width: 700px) { .math-tabs button { padding: 14px; font-size: 18px; } }
 
 /* ---------- Configurações ---------- */
 .cfg-list { display: flex; flex-direction: column; gap: 10px; }
@@ -715,3 +717,42 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 .cfg-item:active { transform: translateY(2px); border-bottom-width: 2px; }
 .about p + p { margin-top: 6px; }
 @media (min-width: 700px) { .cfg-list { max-width: 560px; } }
+
+/* Trilhas: cabeçalho e abas na largura toda; caminho na coluna central */
+@media (min-width: 700px) {
+  .page-learn, .page-table { max-width: 1040px; }
+}
+
+/* ---------- Curiosidades ---------- */
+.curio { border: 2px solid #f3dc8a; background: var(--yellow-l); border-radius: 18px; padding: 14px 16px; margin-bottom: 22px; }
+.curio-top { display: flex; align-items: center; gap: 10px; }
+.curio-top .sic { width: 34px; height: 34px; background: var(--yellow); color: #fff; }
+.curio-top b { font-size: 17px; color: var(--yellow-t); }
+.curio-top small { margin-left: auto; font-size: 12px; color: var(--yellow-t); text-transform: uppercase; letter-spacing: .5px; }
+.curio p { font-size: 17px; line-height: 1.45; margin: 10px 0 12px; }
+.curio-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.curio-btns .btn.white { border-color: #f3dc8a; }
+.curio-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.curio-item { display: flex; gap: 12px; align-items: flex-start; border: 2px solid var(--line); border-left: 6px solid var(--c); border-radius: 14px; padding: 12px; background: #fff; }
+.curio-item p { font-size: 16px; line-height: 1.45; min-width: 0; overflow-wrap: anywhere; }
+.curio-item .sic { width: 36px; height: 36px; }
+@media (min-width: 700px) { .curio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.cfg-profile { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.cfg-profile label { font-size: 15px; margin-top: 4px; }
+.cfg-profile label small { color: var(--muted); font-size: 13px; }
+@media (min-width: 700px) { .cfg-profile { max-width: 560px; } }
+
+/* ---------- Trilhas: mesma largura e espaçamento padrão ---------- */
+.page-learn > * { width: 100%; }
+.page-learn .main-head { margin: 0 0 14px; }
+.page-learn .math-tabs { margin: 0 0 20px; }
+.page-learn .subj-chips { margin-bottom: 18px; }
+.page-learn .curio { margin: 0 0 24px; }
+.page-learn .unit-banner { margin: 0 0 72px; }
+.page-learn .unit + .unit { margin-top: 28px; }
+.page-learn .path { padding-bottom: 36px; }
+@media (min-width: 700px) {
+  .page-learn .main-head { margin-bottom: 18px; }
+  .page-learn .unit-banner { padding: 18px 22px; }
+}
