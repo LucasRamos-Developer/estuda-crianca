@@ -65,21 +65,20 @@ function nav() {
   const main = [
     btn('data-a="subj" data-v="ma"', (onLearn && ui.subj === 'ma') || ui.tab === 'table', `<span class="nav-glyph">123</span>`, 'Matemática'),
     btn('data-a="subj" data-v="lp"', onLearn && ui.subj === 'lp', `<span class="nav-glyph">Aa</span>`, 'Português'),
-    btn('data-a="subj" data-v="geral"', onGeral, icon('layers', 26), 'Geral'),
+    btn('data-a="subj" data-v="geral"', onGeral, icon('layers', 26), 'Outros'),
     btn('data-a="tab" data-v="challenges"', ui.tab === 'challenges', icon('bolt', 26), 'Desafios'),
-    btn('data-a="tab" data-v="progress"', ui.tab === 'progress', icon('chart', 26), 'Progresso'),
-    btn('data-a="tab" data-v="parents"', ui.tab === 'parents', icon('lock', 26), 'Pais'),
+    btn('data-a="tab" data-v="config"', ['config', 'progress', 'parents'].includes(ui.tab), icon('gear', 26), 'Configurações'),
   ];
   // No computador: filtros da trilha Geral no menu lateral
   const crs = C.course(YEAR());
   const link = (id, glyph, name, color) => `<button class="nav-subj c-${color} ${onLearn && ui.subj === id ? 'on' : ''}" data-a="subj" data-v="${id}"><span class="sic">${glyph}</span><span>${name}</span></button>`;
-  const geral = `<div class="nav-subjects"><div class="nav-title">Geral · filtrar matéria</div>
+  const geral = `<div class="nav-subjects"><div class="nav-title">Outros · filtrar matéria</div>
     ${crs.subjects.filter((sb) => C.isGeral(sb.id)).map((sb) => link(sb.id, subjGlyph(sb, 18), sb.full, sb.color)).join('')}
   </div>`;
   return `<nav class="nav"><div class="brand">Estuda Criança</div>${main.join('')}${geral}</nav>`;
 }
 
-const TABS = { learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
+const TABS = { config: renderConfig, learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
 
 // ---------- Trilha ----------
 const OFFSETS = [0, 44, 66, 44, 0, -44, -66, -44];
@@ -122,13 +121,13 @@ function renderGeral(year, crs) {
   </div>`;
   const done = crs.geral.filter((n) => E.stars(n.id) >= 1).length;
   const fp = filter ? C.subjectProgress(year, filter.id) : null;
-  const head = `<div class="main-head c-green"><div><small>${year}º ano · trilha geral</small><h1>Geral</h1><p class="muted">${filter ? `${filter.full}: ${fp.done}/${fp.total} passos` : `Ciências, História, Geografia, Arte e mais · ${done}/${crs.geral.length} passos`}</p></div></div>`;
+  const head = `<div class="main-head c-green"><div><small>${year}º ano · outras matérias</small><h1>Outros</h1><p class="muted">${filter ? `${filter.full}: ${fp.done}/${fp.total} passos` : `Ciências, História, Geografia, Arte e mais · ${done}/${crs.geral.length} passos`}</p></div></div>`;
   if (filter) {
     return `${head}${chips}${unitsHtml(year, filter)}
       ${filter.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
   }
   return `${head}${chips}
-    <div class="unit-banner c-green"><div><small>${year}º ano · todas as matérias da trilha geral</small><h2>Um passo de cada matéria</h2><p>${done}/${crs.geral.length} passos feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
+    <div class="unit-banner c-green"><div><small>${year}º ano · todas as outras matérias</small><h2>Um passo de cada matéria</h2><p>${done}/${crs.geral.length} passos feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
     <div class="path">${pathNodes(year, crs.geral, true)}</div>`;
 }
 
@@ -460,13 +459,33 @@ function startChallenge(kind) {
 }
 
 // ---------- Progresso (criança) ----------
+const backConfig = () => `<button class="back-link" data-a="tab" data-v="config">${icon('left', 20)} Configurações</button>`;
+
+// Configurações: progresso, área dos pais, sons e informações do app
+function renderConfig() {
+  const s = S();
+  const item = (attrs, ic, color, title, desc, right = icon('right', 22)) => `<button class="cfg-item" ${attrs}>
+    <span class="sic c-${color}">${icon(ic, 22)}</span><div class="grow"><b>${title}</b><small>${desc}</small></div>${right}</button>`;
+  return `<h1 class="page-title">Configurações</h1>
+  <div class="cfg-list">
+    ${item('data-a="tab" data-v="progress"', 'chart', 'blue', 'Meu progresso', 'Estatísticas, matérias, tabuadas e conquistas')}
+    ${item('data-a="tab" data-v="parents"', 'lock', 'purple', 'Área dos pais', 'Relatório, PDF, ano escolar, backup e PIN')}
+    ${item('data-a="toggle" data-v="sound"', 'speaker', 'orange', 'Sons e voz', s.settings.sound ? 'Ligados' : 'Desligados', `<span class="switch ${s.settings.sound ? 'on' : ''}"></span>`)}
+  </div>
+  <h2 class="section-title">Sobre o app</h2>
+  <div class="box about">
+    <p><b>Estuda Criança</b> · ${esc(s.profile.name)} · ${YEAR()}º ano</p>
+    <p class="muted small">Conteúdo com base na BNCC (MEC), no Currículo Base do Território Catarinense e no currículo da rede municipal de Joinville. Funciona offline depois do primeiro acesso. O progresso fica salvo neste aparelho: faça backup na Área dos pais.</p>
+  </div>`;
+}
+
 function renderProgress() {
   const s = S();
   const t = E.totals();
   const goalP = Math.min(100, (E.todayXp() / s.settings.goal) * 100);
   const week = E.lastDays(7);
   const maxXp = Math.max(10, ...week.map((d) => d.xp));
-  return `<div class="report-head"><div class="avatar lg">${initial()}</div><div><h2>${esc(s.profile.name)}</h2><span class="muted">Estudando desde ${new Date(s.created).toLocaleDateString('pt-BR')}</span></div></div>
+  return `${backConfig()}<div class="report-head"><div class="avatar lg">${initial()}</div><div><h2>${esc(s.profile.name)}</h2><span class="muted">Estudando desde ${new Date(s.created).toLocaleDateString('pt-BR')}</span></div></div>
   <div class="goal"><div class="ic c-yellow">${icon(goalP >= 100 ? 'trophy' : 'target', 30)}</div><div class="grow"><b>Meta de hoje</b> <span class="muted">${E.todayXp()} / ${s.settings.goal} XP</span><div class="bar"><i style="width:${goalP}%"></i></div></div></div>
   <div class="two-col">
     <div>
@@ -544,7 +563,7 @@ function renderParents() {
     if (s.settings.pin) ui.pinStep = 'enter';
     const title = { new: 'Crie um PIN de 4 números', confirm: 'Repita o PIN', enter: 'Área dos pais' }[ui.pinStep];
     const sub = { new: 'Primeiro acesso: escolha 4 números que só o adulto saiba. Ele protege a área dos pais.', confirm: 'Digite o mesmo PIN de novo para confirmar.', enter: 'Digite o PIN que você criou no primeiro acesso.' }[ui.pinStep];
-    return `<div class="pin-box">
+    return `${backConfig()}<div class="pin-box">
       <div class="big-badge c-blue">${icon('lock', 48)}</div><h1 class="page-title">${title}</h1><p class="muted">${sub}</p>
       <div class="pin-dots">${[0, 1, 2, 3].map((i) => `<i class="${ui.pin.length > i ? 'on' : ''}"></i>`).join('')}</div>
       ${keypadHtml('pin')}
@@ -568,7 +587,7 @@ function parentReport() {
   };
   const weak = E.weakFacts(10);
   const accPill = (acc, n) => (n ? `<span class="pill ${acc >= 0.8 ? 'g' : acc >= 0.5 ? 'y' : 'r'}">${pct(acc)}</span>` : '<span class="pill n">—</span>');
-  return `<div class="report-head"><div class="avatar lg">${initial()}</div><div class="grow"><h2>${esc(s.profile.name)}</h2>
+  return `${backConfig()}<div class="report-head"><div class="avatar lg">${initial()}</div><div class="grow"><h2>${esc(s.profile.name)}</h2>
     <span class="muted">${last ? `Último acesso: ${fmtDate(last.ts)}` : 'Ainda não fez nenhuma atividade'}</span></div>
     <div class="head-btns"><button class="btn blue sm" data-a="print-report">${icon('printer', 20)} PDF</button><button class="btn white sm" data-a="share">${icon('share', 20)} Texto</button></div></div>
   <h2 class="section-title">Resumo</h2>
@@ -1199,7 +1218,7 @@ document.addEventListener('click', (ev) => {
       break;
     }
     case 'pin-change': S().settings.pin = null; E.save(); ui.parentOk = false; ui.pinStep = 'new'; render(); scrollTo(0, 0); break;
-    case 'parent-lock': ui.parentOk = false; ui.tab = 'learn'; render(); break;
+    case 'parent-lock': ui.parentOk = false; ui.tab = 'config'; render(); break;
     case 'goal': S().settings.goal = Number(v); E.save(); render(); break;
     case 'toggle': S().settings[v] = !S().settings[v]; E.save(); render(); break;
     case 'share': shareReport(); break;

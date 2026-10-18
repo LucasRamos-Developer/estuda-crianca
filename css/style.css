@@ -95,7 +95,7 @@ p { margin: 0; }
   font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .4px;
 }
 .nav button.on { border-color: var(--blue-b); background: var(--blue-l); color: var(--blue-d); }
-.nav { grid-template-columns: repeat(6, 1fr); }
+.nav { grid-template-columns: repeat(5, 1fr); }
 .nav-subjects { display: none; }
 
 .topbar {
@@ -706,3 +706,12 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 .math-tabs button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 12px; font-size: 16px; color: var(--muted); }
 .math-tabs button.on { background: var(--c); color: #fff; box-shadow: 0 3px 0 var(--d); }
 @media (min-width: 700px) { .math-tabs { max-width: 420px; } }
+
+/* ---------- Configurações ---------- */
+.cfg-list { display: flex; flex-direction: column; gap: 10px; }
+.cfg-item { display: flex; align-items: center; gap: 12px; padding: 14px; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 16px; background: #fff; text-align: left; color: var(--faint); }
+.cfg-item b { display: block; color: var(--text); font-size: 17px; }
+.cfg-item small { display: block; color: var(--muted); font-size: 14px; }
+.cfg-item:active { transform: translateY(2px); border-bottom-width: 2px; }
+.about p + p { margin-top: 6px; }
+@media (min-width: 700px) { .cfg-list { max-width: 560px; } }

@@ -14,8 +14,10 @@ Site: https://lucasramos-developer.github.io/estuda-crianca/
   - **Matemática** (principal): o app de matemática completo (tabuadas de somar, tirar, multiplicar e dividir do 1 ao 9
     e contas maiores) e depois os tópicos de matemática do ano escolar. As tabuadas para ver e ouvir ficam no topo.
   - **Português**: trilha própria com os conteúdos do ano.
-  - **Geral**: Ciências, História, Geografia, Arte, Educação Física, Inglês e Ensino Religioso juntas,
+  - **Outros**: Ciências, História, Geografia, Arte, Educação Física, Inglês e Ensino Religioso juntas,
     com filtro para estudar uma matéria só.
+- **Menu**: Matemática (abas Trilha e Tabuada), Português, Outros, Desafios e Configurações
+  (Meu progresso, Área dos pais, Sons e voz, Sobre o app).
 - Cada passo mostra uma **explicação curta** e depois **perguntas**. Cada passo tem 3 níveis (estrelas).
 - **3º ano**: conteúdo completo escrito para todas as matérias, ligado aos códigos da BNCC,
   com História e Geografia de Joinville e Inglês dos anos iniciais (rede municipal).
@@ -41,7 +43,7 @@ Pela rede local (http) o modo offline e o "instalar" não funcionam; no GitHub P
 ## Publicar
 
 Push na `main` → o GitHub Pages publica sozinho. **Ao mudar qualquer arquivo, aumente a versão do cache** em `sw.js`
-(`estuda-v4` → `estuda-v5`), senão os aparelhos continuam com a versão antiga.
+(`estuda-v5` → `estuda-v6`), senão os aparelhos continuam com a versão antiga.
 
 ## Estrutura
 
