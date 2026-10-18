@@ -38,6 +38,21 @@ const ui = {
   chOp: 'mul', chN: 'all', chMode: 'quiz',
   onbName: '', onbGoal: 20, onbYear: 3,
 };
+// Abas de cada área (mesma barra em todas): Matemática, Português, Outros e Desafios
+const PANES = {
+  ma: [['trail', 'home', 'Trilha'], ['table', 'book', 'Tabuada'], ['games', 'game', 'Jogos']],
+  lp: [['trail', 'home', 'Trilha'], ['games', 'game', 'Jogos']],
+  geral: [['trail', 'home', 'Trilha'], ['games', 'game', 'Jogos']],
+  ch: [['desafios', 'bolt', 'Desafios'], ['simulados', 'clipboard', 'Simulados'], ['games', 'game', 'Jogos']],
+};
+ui.pane = { ma: 'trail', lp: 'trail', geral: 'trail', ch: 'desafios' };
+ui.paneIdx = {};
+ui.anim = '';
+// Preferências só deste aparelho: qual unidade está aberta em cada trilha (acordeão)
+const UI_KEY = 'estuda-ui';
+ui.acc = (() => { try { return JSON.parse(localStorage.getItem(UI_KEY) || '{}').acc || {}; } catch { return {}; } })();
+const saveUi = () => { try { localStorage.setItem(UI_KEY, JSON.stringify({ acc: ui.acc })); } catch { /* sem armazenamento */ } };
+const paneKey = () => (ui.tab === 'challenges' ? 'ch' : ui.tab !== 'learn' ? null : ui.subj === 'ma' ? 'ma' : ui.subj === 'lp' ? 'lp' : 'geral');
 let session = null;
 let walk = null;
 let studyNode = null;
@@ -47,7 +62,80 @@ let after = [];
 function render() {
   setSound(S().settings.sound);
   if (!S().profile.name) { renderOnboarding(); return; }
-  $app.innerHTML = nav() + `<div class="main">${topbar()}<main class="page page-${ui.tab}">${TABS[ui.tab]()}</main></div>`;
+  const chipsX = $app.querySelector('.subj-chips')?.scrollLeft || 0;
+  const anim = ui.anim;
+  ui.anim = '';
+  $app.innerHTML = nav(anim === 'page') + `<div class="main">${topbar()}<main class="page page-${ui.tab} ${anim === 'page' ? 'page-in' : ''}">${TABS[ui.tab]()}</main></div>`;
+  const body = $app.querySelector('.pane-body');
+  if (body && (anim === 'slide-l' || anim === 'slide-r' || anim === 'fade')) body.classList.add(anim);
+  // Indicador da aba desliza da posição anterior para a nova
+  const bar = $app.querySelector('.ptabs');
+  if (bar) {
+    const key = bar.dataset.key;
+    const idx = Number(bar.dataset.i);
+    const prev = ui.paneIdx[key] ?? idx;
+    ui.paneIdx[key] = idx;
+    if (prev !== idx) {
+      // Começa onde a marcação estava (inclusive no meio do arrasto) e desliza até a aba nova;
+      // o texto troca de cor junto com a marcação
+      const btns = bar.querySelectorAll('button');
+      const from = Math.max(0, Math.min(btns.length - 1, Math.round(prev)));
+      btns[idx].classList.remove('on');
+      btns[from].classList.add('on');
+      bar.style.setProperty('--i', prev);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        bar.classList.add('moving');
+        bar.style.setProperty('--i', idx);
+        btns[from].classList.remove('on');
+        btns[idx].classList.add('on', 'pop');
+        setTimeout(() => bar.classList.remove('moving'), 420);
+      }));
+    }
+  }
+  // A fileira de matérias fica onde estava e centraliza a escolhida
+  const chips = $app.querySelector('.subj-chips');
+  if (chips) {
+    chips.scrollLeft = chipsX;
+    const on = chips.querySelector('.on');
+    if (on && chips.scrollWidth > chips.clientWidth) {
+      const left = on.offsetLeft - (chips.clientWidth - on.offsetWidth) / 2;
+      if (Math.abs(left - chipsX) > 4) chips.scrollTo({ left, behavior: anim ? 'smooth' : 'auto' });
+    }
+  }
+}
+
+// Barra de abas (igual em todas as áreas)
+function paneTabs(key, color) {
+  const list = PANES[key];
+  const idx = Math.max(0, list.findIndex(([id]) => id === ui.pane[key]));
+  return `<div class="ptabs-wrap"><div class="ptabs c-${color}" data-key="${key}" data-i="${idx}" style="--n:${list.length};--i:${ui.paneIdx[key] ?? idx}" role="tablist">
+    <span class="ptabs-ind" aria-hidden="true"></span>
+    ${list.map(([id, ic, label], i) => `<button role="tab" aria-selected="${i === idx}" class="${i === idx ? 'on' : ''}" data-a="pane" data-v="${key}|${id}">${icon(ic, 20)}<span>${label}</span></button>`).join('')}
+  </div></div>`;
+}
+const paneBody = (html) => `<div class="pane-body">${html}</div>`;
+
+// Troca de aba (toque ou deslizar); dir: 1 = para a direita, -1 = para a esquerda
+function setPane(key, id, dir) {
+  const list = PANES[key].map(([x]) => x);
+  if (!list.includes(id) || ui.pane[key] === id) return;
+  if (dir == null) dir = list.indexOf(id) > list.indexOf(ui.pane[key]) ? 1 : -1;
+  ui.pane[key] = id;
+  ui.pop = null;
+  ui.anim = dir > 0 ? 'slide-l' : 'slide-r';
+  stopSpeak();
+  sfx.tap();
+  vibrate(8);
+  render();
+  keepTabsInView();
+}
+// Se a página estava rolada abaixo das abas, volta para o começo do conteúdo novo
+function keepTabsInView() {
+  const head = $app.querySelector('.main-head');
+  const top = $app.querySelector('.topbar');
+  if (!head || !top) return;
+  const limit = head.getBoundingClientRect().bottom + scrollY - top.offsetHeight;
+  if (scrollY > limit) scrollTo(0, Math.max(0, limit));
 }
 
 function topbar() {
@@ -60,12 +148,12 @@ function topbar() {
   </header>`;
 }
 
-function nav() {
+function nav(bump = false) {
   const onLearn = ui.tab === 'learn';
   const onGeral = onLearn && C.isGeral(ui.subj);
   const btn = (attrs, on, ic, label) => `<button class="${on ? 'on' : ''}" ${attrs}>${ic}<span>${label}</span></button>`;
   const main = [
-    btn('data-a="subj" data-v="ma"', (onLearn && ui.subj === 'ma') || ui.tab === 'table', `<span class="nav-glyph">123</span>`, 'Matemática'),
+    btn('data-a="subj" data-v="ma"', onLearn && ui.subj === 'ma', `<span class="nav-glyph">123</span>`, 'Matemática'),
     btn('data-a="subj" data-v="lp"', onLearn && ui.subj === 'lp', `<span class="nav-glyph">Aa</span>`, 'Português'),
     btn('data-a="subj" data-v="geral"', onGeral, icon('layers', 26), 'Outros'),
     btn('data-a="tab" data-v="challenges"', ui.tab === 'challenges', icon('bolt', 26), 'Desafios'),
@@ -77,10 +165,10 @@ function nav() {
   const geral = `<div class="nav-subjects"><div class="nav-title">Outros · filtrar matéria</div>
     ${crs.subjects.filter((sb) => C.isGeral(sb.id)).map((sb) => link(sb.id, subjGlyph(sb, 18), sb.full, sb.color)).join('')}
   </div>`;
-  return `<nav class="nav"><div class="brand">Estuda Criança</div>${main.join('')}${geral}</nav>`;
+  return `<nav class="nav ${bump ? 'bump' : ''}"><div class="brand">Estuda Criança</div>${main.join('')}${geral}</nav>`;
 }
 
-const TABS = { curios: renderCurios, config: renderConfig, learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
+const TABS = { curios: renderCurios, config: renderConfig, learn: renderLearn, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
 
 // ---------- Trilha ----------
 const OFFSETS = [0, 44, 66, 44, 0, -44, -66, -44];
@@ -92,10 +180,20 @@ function renderLearn() {
   if (C.isGeral(ui.subj)) return renderGeral(year, crs);
   const cur = crs.subjects.find((s) => s.id === ui.subj);
   const prog = C.subjectProgress(year, cur.id);
-  const head = `<div class="main-head c-${cur.color}"><div><small>${year}º ano · trilha principal</small><h1>${cur.full}</h1><p class="muted">${prog.done}/${prog.total} passos feitos</p></div></div>${cur.id === 'ma' ? mathTabs('trail') : ''}`;
-  return `${head}${gameStrip([cur.id])}${curioCard([cur.id], cur.id)}${unitsHtml(year, cur)}
+  const head = mainHead(cur.color, `${year}º ano · trilha principal`, cur.full, `${prog.done}/${prog.total} passos feitos`);
+  const pane = ui.pane[cur.id];
+  let body;
+  if (pane === 'table' && cur.id === 'ma') body = tableBody();
+  else if (pane === 'games') body = gamesPane([cur.id]);
+  else {
+    body = `${curioCard([cur.id], cur.id)}${unitsHtml(year, cur)}
     ${cur.authored || cur.id === 'ma' ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
+  }
+  return `${head}${paneTabs(cur.id, cur.color)}${paneBody(body)}`;
 }
+
+// Cabeçalho igual em todas as áreas (mesma altura, as abas ficam sempre no mesmo lugar)
+const mainHead = (color, small, title, sub) => `<div class="main-head c-${color}"><div><small>${esc(small)}</small><h1>${esc(title)}</h1><p class="muted one-line">${esc(sub)}</p></div></div>`;
 
 // ---------- Curiosidades ("Você sabia?") ----------
 const curioList = (ids) => ids.flatMap((id) => (C.curios()[id] || []).map((text) => ({ subj: id, text })));
@@ -138,16 +236,38 @@ function renderCurios() {
 // ---------- Jogos por matéria ----------
 const gameOf = (id) => C.games(YEAR())[id];
 const gameRec = (id) => S().games[`y${YEAR()}-${id}`];
-function gameStrip(ids) {
+// Aba Jogos: um jogo aberto com os níveis na tela, ou a grade de jogos quando há vários
+function gamesPane(ids) {
   const list = ids.filter((id) => gameOf(id));
-  if (!list.length) return '';
-  return `<div class="game-strip ${list.length > 2 ? 'many' : ''}">${list.map((id) => {
-    const g = gameOf(id);
+  const extra = ids.includes('ma') ? `<button class="game-chip c-green" data-a="pane-go" data-v="ch|desafios"><span class="sic">${icon('bolt', 22)}</span>
+      <span class="grow"><b>Desafio de contas</b><small>Tabuadas: perguntas, 1 minuto ou 3 vidas</small></span>${icon('right', 20)}</button>` : '';
+  if (!list.length) {
+    return `<div class="empty-box">${icon('game', 40)}<b>Jogos do ${YEAR()}º ano em preparação</b><p class="muted">Por enquanto os jogos estão prontos para o 3º ano. Os outros anos chegam aos poucos.</p></div>${extra}`;
+  }
+  if (list.length === 1) return gameBlock(list[0]) + extra;
+  return `<div class="games-grid">${list.map((id) => {
     const sb = C.subjectById(id);
+    const g = gameOf(id);
     const r = gameRec(id);
-    return `<button class="game-chip c-${sb.color}" data-a="game" data-v="${id}"><span class="sic">${icon(G.GAME_ICON[g.tipo] || 'game', 22)}</span>
-      <span class="grow"><b>${esc(g.titulo)}</b><small>${list.length > 1 ? sb.name : `Jogo de ${sb.full}`}${r ? ` · melhor ${pct(r.best)}` : ''}</small></span>${icon('right', 20)}</button>`;
-  }).join('')}</div>`;
+    return `<button class="game-card-btn c-${sb.color}" data-a="game" data-v="${id}">
+      <span class="sic">${icon(G.GAME_ICON[g.tipo] || 'game', 26)}</span>
+      <small>${sb.full}</small><b>${esc(g.titulo)}</b><span class="desc">${esc(g.desc || '')}</span>
+      <span class="rec">${r ? `Jogou ${r.plays}x · melhor ${pct(r.best)}` : 'Ainda não jogou'}</span></button>`;
+  }).join('')}</div>${extra}`;
+}
+
+function gameBlock(id) {
+  const g = gameOf(id);
+  const sb = C.subjectById(id);
+  const r = gameRec(id);
+  const lv = G.levels(g);
+  return `<section class="game-block c-${sb.color}">
+    <div class="gb-head"><span class="sic">${icon(G.GAME_ICON[g.tipo] || 'game', 30)}</span>
+      <div class="grow"><small>Jogo de ${sb.full}</small><h2>${esc(g.titulo)}</h2><p>${esc(g.desc || '')}</p></div></div>
+    <div class="gb-rec">${r ? `${icon('trophy', 18)} Jogou ${r.plays}x · melhor ${pct(r.best)}` : 'Ainda não jogou'}</div>
+    ${lv.length ? `<div class="gb-label">Escolha um nível</div><div class="gb-levels">${lv.map((name, i) => `<button data-a="game-go" data-v="${id}|${i}"><span class="n">${i + 1}</span>${esc(name)}</button>`).join('')}</div>` : ''}
+    <button class="btn" data-a="game-go" data-v="${id}|-1">${lv.length ? `${icon('shuffle', 20)} Misturar tudo` : 'Jogar'}</button>
+  </section>`;
 }
 
 // Escolha do nível antes de jogar
@@ -181,20 +301,29 @@ function startSimulado(simId) {
   startSession({ kind: 'simulado', simId, title: sim.titulo, questions: C.simuladoQuestions(sim), retry: false, help: false });
 }
 
-// Abas da Matemática: Trilha | Tabuada
-function mathTabs(active) {
-  return `<div class="math-tabs c-green">
-    <button class="${active === 'trail' ? 'on' : ''}" data-a="subj" data-v="ma">${icon('home', 20)} Trilha</button>
-    <button class="${active === 'table' ? 'on' : ''}" data-a="tab" data-v="table">${icon('book', 20)} Tabuada</button>
-  </div>`;
-}
 
+// Unidades em acordeão: uma aberta por vez. Concluída = destacada na cor da matéria; em andamento = branca
 function unitsHtml(year, subj) {
-  return subj.units.map((u, i) => `<section class="unit">
-      <div class="unit-banner c-${subj.color}"><div><small>${subj.full} · Unidade ${i + 1}${u.core ? '' : ` · ${year}º ano`}</small><h2>${esc(u.title)}</h2>
-        <p>${u.nodes.filter((n) => E.stars(n.id) >= 1).length}/${u.nodes.length} passos feitos</p></div><div class="big">${u.core ? E.SYM[u.nodes[0].gen.op] : subjGlyph(subj, 40)}</div></div>
-      <div class="path">${pathNodes(year, u.nodes, false)}</div>
-    </section>`).join('');
+  const key = `${year}:${subj.id}`;
+  const cur = C.currentId(year, subj.nodes);
+  const curUnit = Math.max(0, subj.units.findIndex((u) => u.nodes.some((n) => n.id === cur)));
+  const open = ui.acc[key] ?? curUnit;
+  const doneUnits = subj.units.filter((u) => u.nodes.every((n) => E.stars(n.id) >= 1)).length;
+  const tools = subj.units.length > 1 ? `<div class="units-tools muted">${subj.units.length} unidades · ${doneUnits} ${doneUnits === 1 ? 'concluída' : 'concluídas'}</div>` : '';
+  return tools + subj.units.map((u, i) => {
+    const done = u.nodes.filter((n) => E.stars(n.id) >= 1).length;
+    const complete = done === u.nodes.length;
+    const isOpen = i === open;
+    const starsP = (u.nodes.reduce((a, n) => a + E.stars(n.id), 0) / (u.nodes.length * 3)) * 100;
+    return `<section class="unit c-${subj.color} ${isOpen ? '' : 'folded'} ${complete ? 'done' : ''}">
+      <button class="unit-banner" data-a="unit" data-v="${key}|${i}" aria-expanded="${isOpen}">
+        <div class="grow"><small>Unidade ${i + 1}${u.core ? '' : ` · ${year}º ano`}</small><h2>${esc(u.title)}</h2>
+          <p>${complete ? `Concluída · ${done}/${u.nodes.length} passos` : `${done}/${u.nodes.length} passos feitos`}</p><div class="ub-bar"><i style="width:${starsP}%"></i></div></div>
+        <span class="ub-chev">${icon('down', 22)}</span>
+      </button>
+      <div class="unit-body"><div class="unit-inner"><div class="path">${pathNodes(year, u.nodes, false)}</div></div></div>
+    </section>`;
+  }).join('');
 }
 
 // Trilha Geral: as outras matérias juntas, com filtro por matéria
@@ -202,19 +331,21 @@ function renderGeral(year, crs) {
   const others = crs.subjects.filter((sb) => C.isGeral(sb.id));
   const filter = ui.subj === 'geral' ? null : others.find((sb) => sb.id === ui.subj);
   const chips = `<div class="subj-chips">
-    <button class="subj-chip c-green ${!filter ? 'on' : ''}" data-a="subj" data-v="geral">${icon('layers', 20)}<span>Todas</span></button>
-    ${others.map((sb) => `<button class="subj-chip c-${sb.color} ${filter?.id === sb.id ? 'on' : ''}" data-a="subj" data-v="${sb.id}">${subjGlyph(sb, 20)}<span>${sb.name}</span></button>`).join('')}
+    <button class="subj-chip c-green ${!filter ? 'on' : ''}" data-a="filter" data-v="geral">${icon('layers', 20)}<span>Todas</span></button>
+    ${others.map((sb) => `<button class="subj-chip c-${sb.color} ${filter?.id === sb.id ? 'on' : ''}" data-a="filter" data-v="${sb.id}">${subjGlyph(sb, 20)}<span>${sb.name}</span></button>`).join('')}
   </div>`;
   const done = crs.geral.filter((n) => E.stars(n.id) >= 1).length;
   const fp = filter ? C.subjectProgress(year, filter.id) : null;
-  const head = `<div class="main-head c-green"><div><small>${year}º ano · outras matérias</small><h1>Outros</h1><p class="muted">${filter ? `${filter.full}: ${fp.done}/${fp.total} passos` : `Ciências, História, Geografia, Arte e mais · ${done}/${crs.geral.length} passos`}</p></div></div>`;
+  const head = mainHead('green', `${year}º ano · outras matérias`, 'Outros', filter ? `${filter.full}: ${fp.done}/${fp.total} passos` : `Ciências, História, Geografia e mais · ${done}/${crs.geral.length}`);
+  const top = `${head}${paneTabs('geral', 'green')}${chips}`;
+  if (ui.pane.geral === 'games') return top + paneBody(gamesPane(filter ? [filter.id] : others.map((o) => o.id)));
   if (filter) {
-    return `${head}${chips}${gameStrip([filter.id])}${curioCard([filter.id], filter.id)}${unitsHtml(year, filter)}
-      ${filter.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
+    return top + paneBody(`${curioCard([filter.id], filter.id)}${unitsHtml(year, filter)}
+      ${filter.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`);
   }
-  return `${head}${chips}${gameStrip(others.map((o) => o.id))}${curioCard(others.map((o) => o.id), 'outros')}
-    <div class="unit-banner c-green"><div><small>${year}º ano · todas as outras matérias</small><h2>Um passo de cada matéria</h2><p>${done}/${crs.geral.length} passos feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
-    <div class="path">${pathNodes(year, crs.geral, true)}</div>`;
+  return top + paneBody(`${curioCard(others.map((o) => o.id), 'outros')}
+    <div class="unit-banner static"><div class="grow"><small>${year}º ano · todas as outras matérias</small><h2>Um passo de cada matéria</h2><p>${done}/${crs.geral.length} passos feitos</p></div></div>
+    <div class="path first">${pathNodes(year, crs.geral, true)}</div>`);
 }
 
 function pathNodes(year, nodes, showSubj) {
@@ -294,11 +425,9 @@ function renderStudy(n) {
 }
 
 // ---------- Aba Tabuada (livrinho com as 9 tabuadas) ----------
-function renderTable() {
+function tableBody() {
   const op = ui.tableOp;
-  return `<div class="main-head c-green"><div><small>${YEAR()}º ano · trilha principal</small><h1>Matemática</h1><p class="muted">Veja, ouça e aprenda as tabuadas</p></div></div>
-  ${mathTabs('table')}
-  <div class="op-tabs">${OPS.map((o) => `<button class="op-tab c-${OP_COLOR[o]} ${o === op ? 'on' : ''}" data-a="table-op" data-v="${o}"><b>${OP_SHORT[o]}</b><span>${OP_TAB[o]}</span></button>`).join('')}</div>
+  return `<div class="op-tabs">${OPS.map((o) => `<button class="op-tab c-${OP_COLOR[o]} ${o === op ? 'on' : ''}" data-a="table-op" data-v="${o}"><b>${OP_SHORT[o]}</b><span>${OP_TAB[o]}</span></button>`).join('')}</div>
   <div class="book c-${OP_COLOR[op]}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button class="tcard" data-a="table-open" data-v="${n}">
     <h3>Tabuada do ${n}</h3>
     <ol>${E.tableRows(op, n).map((r) => `<li><span>${r.a} ${E.SYM[op]} ${r.b} =</span><b>${r.res}</b></li>`).join('')}</ol>
@@ -495,7 +624,11 @@ function renderChallenges() {
     <div class="rec">${info}</div>
     <button class="btn ${color === 'purple' ? 'purple' : color === 'orange' ? 'orange' : color === 'green' ? '' : 'blue'}" data-a="ch" data-v="${act}" ${done ? 'disabled' : ''}>${btn}</button>
   </div>`;
-  return `<h1 class="page-title">Desafios</h1>
+  const head = mainHead('blue', `${YEAR()}º ano · desafios`, 'Desafios', 'Contas, simulados e jogos de todas as matérias');
+  const pane = ui.pane.ch;
+  if (pane === 'simulados') return `${head}${paneTabs('ch', 'blue')}${paneBody(simuladosHtml())}`;
+  if (pane === 'games') return `${head}${paneTabs('ch', 'blue')}${paneBody(gamesPane(C.course(YEAR()).subjects.map((sb) => sb.id)))}`;
+  return `${head}${paneTabs('ch', 'blue')}<div class="pane-body">
   <section class="builder c-${OP_COLOR[op]}">
     <h2>Matemática · desafio de contas</h2>
     <div class="b-step"><span class="b-label">1. Operação</span>
@@ -506,8 +639,6 @@ function renderChallenges() {
       <div class="modes">${CH_MODES.map(([m, ic, label, desc]) => `<button class="mode ${m === mode ? 'on' : ''}" data-a="ch-mode" data-v="${m}">${icon(ic, 24)}<b>${label}</b><small>${desc}</small></button>`).join('')}</div></div>
     <div class="b-go"><span class="rec">${recLabel}</span><button class="btn" data-a="ch" data-v="table">Começar · ${n === 'all' ? 'todas as tabuadas' : `tabuada do ${n}`} de ${OP_VERB[op]}</button></div>
   </section>
-  ${simuladosHtml()}
-  ${gamesHtml()}
   <h2 class="section-title">Desafios de todas as matérias</h2>
   <div class="cards">
     ${card('daily', 'calendar', 'orange', 'Desafio do dia', '10 contas misturadas. Ganhe +20 XP.', dailyDone != null ? `Feito hoje: ${dailyDone}/10` : 'Novo desafio disponível', dailyDone != null ? 'Volte amanhã' : 'Jogar', dailyDone != null)}
@@ -515,35 +646,19 @@ function renderChallenges() {
       `<div class="seg mini">${OPS.map((o) => `<button class="${ui.testOp === o ? 'on' : ''}" data-a="test-op" data-v="${o}">${OP_SHORT[o]}</button>`).join('')}</div>`)}
     ${card('surprise', 'shuffle', 'green', 'Revisão surpresa', 'Perguntas de todas as matérias que você já estudou na trilha.', seen ? `${seen} ${seen === 1 ? 'lição estudada' : 'lições estudadas'}` : 'Faça uma lição da trilha para liberar', 'Jogar', !seen)}
     ${card('errors', 'target', 'blue', 'Treino dos erros', 'Pratique as contas que você mais erra.', weak ? `${weak} ${weak === 1 ? 'conta' : 'contas'} para treinar` : 'Nenhum erro para treinar', 'Treinar', !weak)}
-  </div>`;
+  </div></div>`;
 }
 
 function simuladosHtml() {
   const sims = C.simulados(YEAR());
-  if (!sims.length) return '';
-  return `<h2 class="section-title">Simulados do ${YEAR()}º ano</h2>
-  <p class="muted small section-sub">Uma prova por trimestre, como na escola, e uma final. Sem ajuda. No fim sai o boletim por matéria.</p>
+  if (!sims.length) return `<div class="empty-box">${icon('clipboard', 40)}<b>Simulados do ${YEAR()}º ano em preparação</b><p class="muted">Por enquanto os simulados estão prontos para o 3º ano.</p></div>`;
+  return `<p class="muted pane-intro">Uma prova por trimestre, como na escola, e uma final. Sem ajuda. No fim sai o boletim por matéria.</p>
   <div class="cards sims">${sims.map((x) => {
     const last = S().simulados.find((r) => r.id === x.id);
     const n = Object.values(x.questoes).reduce((a, l) => a + l.length, 0);
     return `<div class="card sim"><div class="card-top"><div class="ic c-purple">${icon('clipboard', 28)}</div><div class="grow"><h3>${esc(x.titulo)}</h3><p>${esc(x.temas || '')}</p></div></div>
       <div class="rec">${last ? `Última nota: <b>${last.score}/${last.total}</b> · ${new Date(last.ts).toLocaleDateString('pt-BR')}` : `${n} questões · ainda não fez`}</div>
       <button class="btn purple" data-a="sim" data-v="${x.id}">${last ? 'Fazer de novo' : 'Fazer simulado'}</button></div>`;
-  }).join('')}</div>`;
-}
-
-function gamesHtml() {
-  const crs = C.course(YEAR());
-  const list = crs.subjects.filter((sb) => gameOf(sb.id));
-  if (!list.length) return '';
-  return `<h2 class="section-title">Jogos das matérias</h2>
-  <div class="games-grid">${list.map((sb) => {
-    const g = gameOf(sb.id);
-    const r = gameRec(sb.id);
-    return `<button class="game-card-btn c-${sb.color}" data-a="game" data-v="${sb.id}">
-      <span class="sic">${icon(G.GAME_ICON[g.tipo] || 'game', 26)}</span>
-      <small>${sb.full}</small><b>${esc(g.titulo)}</b><span class="desc">${esc(g.desc || '')}</span>
-      <span class="rec">${r ? `Jogou ${r.plays}x · melhor ${pct(r.best)}` : 'Ainda não jogou'}</span></button>`;
   }).join('')}</div>`;
 }
 
@@ -1339,6 +1454,88 @@ function resultNext() {
   if (f) f(); else closeSession();
 }
 
+// ---------- Unidades em acordeão ----------
+function toggleUnit(el, v) {
+  const [key, idx] = v.split('|');
+  const i = Number(idx);
+  const sec = el.closest('.unit');
+  const opening = sec.classList.contains('folded');
+  ui.acc[key] = opening ? i : -1;
+  saveUi();
+  sfx.tap();
+  if (ui.pop) { ui.pop = null; render(); return; }
+  // Sem redesenhar a página: abre uma e fecha a outra com animação
+  const all = [...$app.querySelectorAll('.unit')];
+  let shift = 0;
+  for (const other of all) {
+    if (other === sec || other.classList.contains('folded')) continue;
+    // A que fecha acima da tocada encolhe: rola junto para a tocada não sair do lugar
+    if (opening && other.compareDocumentPosition(sec) & Node.DOCUMENT_POSITION_FOLLOWING) shift += other.querySelector('.unit-body').offsetHeight;
+    other.classList.add('folded');
+    other.querySelector('.unit-banner').setAttribute('aria-expanded', 'false');
+  }
+  sec.classList.toggle('folded', !opening);
+  el.setAttribute('aria-expanded', String(opening));
+  if (shift) scrollTo({ top: Math.max(0, scrollY - shift), behavior: 'smooth' });
+}
+
+// ---------- Deslizar para trocar de aba ----------
+let swipe = null;
+const NO_SWIPE = '.subj-chips, .op-tabs, .num-pick, .modes, .seg, .mgrid, .chart, input, .no-swipe';
+document.addEventListener('touchstart', (ev) => {
+  swipe = null;
+  const key = paneKey();
+  if (!key || session || walk || studyNode || $modal.innerHTML || $ov.innerHTML || ev.touches.length !== 1) return;
+  if (ev.target.closest(NO_SWIPE)) return;
+  const t = ev.touches[0];
+  swipe = { key, x: t.clientX, y: t.clientY, dx: 0, lock: null, el: $app.querySelector('.pane-body'), bar: $app.querySelector('.ptabs') };
+}, { passive: true });
+document.addEventListener('touchmove', (ev) => {
+  if (!swipe || !swipe.el) return;
+  const t = ev.touches[0];
+  const dx = t.clientX - swipe.x;
+  const dy = t.clientY - swipe.y;
+  if (!swipe.lock && (Math.abs(dx) > 12 || Math.abs(dy) > 12)) swipe.lock = Math.abs(dx) > Math.abs(dy) * 1.4 ? 'h' : 'v';
+  if (swipe.lock !== 'h') return;
+  const list = PANES[swipe.key].map(([x]) => x);
+  const i = list.indexOf(ui.pane[swipe.key]);
+  const edge = (dx > 0 && i === 0) || (dx < 0 && i === list.length - 1);
+  swipe.dx = dx;
+  swipe.el.style.transition = 'none';
+  swipe.el.style.transform = `translateX(${dx * (edge ? 0.12 : 0.4)}px)`;
+  swipe.el.style.opacity = String(1 - Math.min(Math.abs(dx) / 700, edge ? 0.05 : 0.35));
+  if (swipe.bar) {
+    const p = Math.max(-1, Math.min(1, -dx / (swipe.el.clientWidth * 0.6)));
+    swipe.pos = Math.max(0, Math.min(list.length - 1, i + p * (edge ? 0.15 : 1)));
+    swipe.bar.classList.add('dragging');
+    swipe.bar.style.setProperty('--i', swipe.pos);
+  }
+}, { passive: true });
+document.addEventListener('touchend', () => {
+  const sw = swipe;
+  swipe = null;
+  if (!sw || sw.lock !== 'h' || !sw.el) return;
+  const list = PANES[sw.key].map(([x]) => x);
+  const i = list.indexOf(ui.pane[sw.key]);
+  const j = sw.dx < 0 ? i + 1 : i - 1;
+  sw.bar?.classList.remove('dragging');
+  if (Math.abs(sw.dx) > 60 && j >= 0 && j < list.length) {
+    if (sw.pos != null) ui.paneIdx[sw.key] = sw.pos;
+    setPane(sw.key, list[j], sw.dx < 0 ? 1 : -1);
+    return;
+  }
+  // Volta para o lugar
+  sw.bar?.style.setProperty('--i', i);
+  sw.el.style.transition = 'transform .25s cubic-bezier(.3,1.4,.5,1), opacity .2s';
+  sw.el.style.transform = '';
+  sw.el.style.opacity = '';
+});
+document.addEventListener('touchcancel', () => {
+  if (swipe?.el) { swipe.el.style.transform = ''; swipe.el.style.opacity = ''; }
+  if (swipe?.bar) { swipe.bar.classList.remove('dragging'); swipe.bar.style.setProperty('--i', Number(swipe.bar.dataset.i)); }
+  swipe = null;
+});
+
 // ---------- Eventos ----------
 document.addEventListener('click', (ev) => {
   const el = ev.target.closest('[data-a]');
@@ -1349,7 +1546,8 @@ document.addEventListener('click', (ev) => {
   if (!a) return;
   switch (a) {
     case 'tab':
-      stopSpeak(); ui.tab = v; ui.pop = null;
+      if (v === 'table') { ui.tab = 'learn'; ui.subj = 'ma'; if (ui.pane.ma === 'table') render(); else setPane('ma', 'table'); break; }
+      stopSpeak(); ui.anim = ui.tab === v ? '' : 'page'; ui.tab = v; ui.pop = null;
       if (v !== 'parents') { ui.parentOk = false; ui.pin = ''; }
       sfx.tap(); render(); scrollTo(0, 0); break;
     case 'node': ui.pop = ui.pop === v ? null : v; sfx.tap(); render(); break;
@@ -1357,8 +1555,20 @@ document.addEventListener('click', (ev) => {
     case 'study-go': lessonGo(studyNode.id); break;
     case 'study-walk': { const n = studyNode; startWalk(n.gen.op, n.gen.n, () => lessonGo(n.id)); break; }
     case 'check-mark': checkMark(Number(v)); break;
-    case 'go-subj': ui.tab = 'learn'; ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
-    case 'subj': ui.subj = v; ui.tab = 'learn'; ui.pop = null; closeModal(); sfx.tap(); render(); scrollTo(0, 0); break;
+    case 'go-subj': ui.anim = 'page'; ui.tab = 'learn'; ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
+    case 'subj': {
+      const was = paneKey();
+      ui.subj = v; ui.tab = 'learn'; ui.pop = null; closeModal();
+      const now = paneKey();
+      if (was === now && ui.pane[now] !== 'trail' && (now !== 'geral' || v === 'geral')) { setPane(now, 'trail'); break; }
+      if (was !== now) ui.anim = 'page';
+      sfx.tap(); render(); if (was !== now) scrollTo(0, 0);
+      break;
+    }
+    case 'filter': ui.subj = v; ui.pop = null; ui.anim = 'fade'; sfx.tap(); render(); keepTabsInView(); break;
+    case 'pane': { const [key, id] = v.split('|'); setPane(key, id); break; }
+    case 'pane-go': { const [key, id] = v.split('|'); ui.anim = 'page'; ui.tab = key === 'ch' ? 'challenges' : 'learn'; ui.pane[key] = id; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break; }
+    case 'unit': toggleUnit(el, v); break;
     case 'curio-next': ui.curio[v] = (ui.curio[v] ?? 0) + 1; stopSpeak(); sfx.tap(); render(); break;
     case 'curio-speak': toggleSpeak(ui.curioText[v] || ''); break;
     case 'curio-all': ui.curioSubj = v; ui.tab = 'curios'; stopSpeak(); sfx.tap(); render(); scrollTo(0, 0); break;

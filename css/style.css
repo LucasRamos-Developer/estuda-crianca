@@ -701,13 +701,6 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 }
 .main-head + .subj-chips { margin-top: 4px; }
 
-/* ---------- Abas da Matemática ---------- */
-.math-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg2); border: 2px solid var(--line); border-radius: 16px; padding: 5px; margin: 4px 0 20px; }
-.math-tabs button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 12px; font-size: 16px; color: var(--muted); }
-.math-tabs button.on { background: var(--c); color: #fff; box-shadow: 0 3px 0 var(--d); }
-.math-tabs { width: 100%; }
-.math-tabs button { padding: 13px 10px; font-size: 17px; }
-@media (min-width: 700px) { .math-tabs button { padding: 14px; font-size: 18px; } }
 
 /* ---------- Configurações ---------- */
 .cfg-list { display: flex; flex-direction: column; gap: 10px; }
@@ -744,10 +737,10 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 /* ---------- Trilhas: mesma largura e espaçamento padrão ---------- */
 .page-learn > * { width: 100%; }
 .page-learn .main-head { margin: 0 0 14px; }
-.page-learn .math-tabs { margin: 0 0 20px; }
 .page-learn .subj-chips { margin-bottom: 18px; }
 .page-learn .curio { margin: 0 0 24px; }
-.page-learn .unit-banner { margin: 0 0 72px; }
+.page-learn .unit-banner { margin: 0; }
+.page-learn .unit-banner.static { margin: 0 0 72px; }
 .page-learn .unit + .unit { margin-top: 28px; }
 .page-learn .path { padding-bottom: 36px; }
 @media (min-width: 700px) {
@@ -769,7 +762,6 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 
 /* ---------- Jogos das matérias ---------- */
 .section-sub { margin: -6px 0 12px; }
-.game-strip { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-bottom: 18px; }
 .game-chip { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 2px solid var(--line); border-bottom-width: 4px; border-left: 6px solid var(--c); border-radius: 16px; background: #fff; text-align: left; }
 .game-chip b { display: block; font-size: 17px; }
 .game-chip small { display: block; color: var(--muted); font-size: 13px; }
@@ -786,7 +778,6 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 .game-card-btn .rec { margin-top: auto; padding-top: 6px; font-size: 12px; color: var(--faint); }
 .cards.sims .card p { line-height: 1.35; }
 @media (min-width: 700px) {
-  .game-strip { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
   .games-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
@@ -854,8 +845,142 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 .sim-per { display: inline-flex; flex-wrap: wrap; gap: 3px; }
 .sim-per i { font-style: normal; font-size: 11px; padding: 1px 5px; border-radius: 5px; white-space: nowrap; }
 .sim-per .g { background: #c9f2a8; } .sim-per .y { background: #ffe9a3; } .sim-per .r { background: #ffc9c9; }
-@media (max-width: 699px) {
-  .game-strip.many { display: flex; overflow-x: auto; margin: 0 -16px 18px; padding: 2px 16px 6px; scrollbar-width: none; }
-  .game-strip.many::-webkit-scrollbar { display: none; }
-  .game-strip.many .game-chip { flex: 0 0 auto; width: 210px; }
+
+/* ---------- Abas iguais em todas as áreas (Trilha, Tabuada, Jogos...) ---------- */
+:root { --topbar-h: 62px; }
+@media (min-width: 1024px) { :root { --topbar-h: 70px; } }
+.ptabs {
+  --gap: 6px;
+  position: relative;
+  display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: var(--gap);
+  width: 100%; padding: 5px; border: 2px solid var(--line); border-radius: 16px; background: var(--bg2);
 }
+/* Faixa fixa sob o topo: as abas ficam sempre à mão ao rolar a trilha */
+.page { --pad-x: 16px; }
+@media (max-width: 359px) { .page { --pad-x: 12px; } }
+@media (min-width: 700px) { .page { --pad-x: 28px; } }
+@media (min-width: 1024px) { .page { --pad-x: 40px; } }
+.ptabs-wrap {
+  position: sticky; top: var(--topbar-h); z-index: 15; width: auto !important;
+  margin: -6px calc(-1 * var(--pad-x)) 12px; padding: 6px var(--pad-x) 8px; background: var(--bg);
+}
+html { scrollbar-gutter: stable; }
+.ptabs-ind {
+  position: absolute; top: 5px; bottom: 5px; left: 5px;
+  width: calc((100% - 10px - (var(--n) - 1) * var(--gap)) / var(--n));
+  transform: translateX(calc(var(--i) * (100% + var(--gap))));
+  background: var(--c); border-radius: 12px; box-shadow: 0 3px 0 var(--d);
+  transition: transform .38s cubic-bezier(.3, 1.35, .5, 1);
+}
+.ptabs button {
+  position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 0;
+  padding: 12px 6px; border-radius: 12px; font-size: 16px; color: var(--muted); transition: color .2s, transform .12s;
+}
+.ptabs button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ptabs button.on { color: #fff; }
+.ptabs button:active { transform: scale(.95); }
+@media (min-width: 700px) { .ptabs button { padding: 14px; font-size: 18px; } }
+.ptabs-wrap + .subj-chips { margin-top: 0; }
+
+/* Cabeçalho com a mesma altura em todas as áreas */
+.main-head .one-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.main-head > div { min-width: 0; width: 100%; }
+.page-challenges .main-head, .page-learn .main-head { margin: 0 0 14px; }
+
+/* Mesma largura em todas as páginas: nada pula de lugar ao trocar de aba */
+@media (min-width: 700px) {
+  .page, .page-learn, .page-table, .page-challenges, .page-config, .page-progress, .page-parents, .page-curios { max-width: 1040px; }
+}
+.page-challenges > * { width: 100%; }
+
+/* Transições */
+.pane-body { touch-action: pan-y; }
+.pane-body.slide-l { animation: paneL .34s cubic-bezier(.2, .8, .3, 1); }
+.pane-body.slide-r { animation: paneR .34s cubic-bezier(.2, .8, .3, 1); }
+.pane-body.fade { animation: fade .22s ease; }
+@keyframes paneL { from { transform: translateX(56px); opacity: 0; } }
+@keyframes paneR { from { transform: translateX(-56px); opacity: 0; } }
+.page.page-in { animation: pageIn .26s ease; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(10px); } }
+.nav.bump button.on .ico, .nav.bump button.on .nav-glyph { animation: navPop .4s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes navPop { 40% { transform: scale(1.25) translateY(-2px); } }
+.subj-chip { transition: background .2s, color .2s, border-color .2s, transform .12s; }
+.subj-chip:active { transform: scale(.94); }
+.node:active { transform: translateY(4px) scale(.97); }
+.option, .game-card-btn, .game-chip, .cfg-item, .subj-bar, .gb-levels button { transition: transform .1s, border-color .15s, background .15s; }
+
+/* ---------- Unidades recolhíveis ---------- */
+.units-tools { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; font-size: 14px; }
+.link-btn { display: inline-flex; align-items: center; gap: 4px; color: var(--blue-d); font-size: 14px; padding: 6px 8px; border-radius: 10px; }
+.link-btn:active { background: var(--blue-l); }
+button.unit-banner { width: 100%; text-align: left; cursor: pointer; transition: transform .12s, box-shadow .12s, border-radius .3s; }
+button.unit-banner:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--d); }
+.unit-banner .grow { min-width: 0; }
+.ub-bar { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, .35); margin-top: 8px; max-width: 260px; overflow: hidden; }
+.ub-bar i { display: block; height: 100%; border-radius: 99px; background: #fff; transition: width .4s; }
+.ub-chev { flex: none; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, .25); display: grid; place-items: center; transition: transform .3s cubic-bezier(.3, 1.4, .5, 1); }
+.unit:not(.folded) .ub-chev { transform: rotate(180deg); }
+.unit-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .38s cubic-bezier(.3, .9, .3, 1); }
+.unit-inner { min-height: 0; overflow: hidden; }
+.unit-inner .path { padding-top: 72px; transition: opacity .3s; }
+.unit.folded .unit-body { grid-template-rows: 0fr; }
+.unit.folded .unit-inner .path { opacity: 0; }
+.page-learn .unit + .unit { margin-top: 16px; }
+.page-learn .unit:not(.folded) + .unit { margin-top: 28px; }
+@media (max-width: 420px) { .unit-banner .big { font-size: 38px; } .ub-chev { width: 30px; height: 30px; } }
+
+/* ---------- Aba Jogos ---------- */
+.game-block { border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 20px; padding: 18px; background: #fff; display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+.gb-head { display: flex; gap: 14px; align-items: center; }
+.gb-head .sic { width: 60px; height: 60px; border-radius: 18px; }
+.gb-head small { display: block; color: var(--c); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+.gb-head h2 { font-size: 24px; }
+.gb-head p { color: var(--muted); font-size: 15px; line-height: 1.35; margin-top: 2px; }
+.gb-rec { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--yellow-t); }
+.gb-label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.gb-levels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.gb-levels button { display: flex; align-items: center; gap: 10px; padding: 12px; text-align: left; font-size: 16px; line-height: 1.2;
+  border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 14px; background: #fff; min-width: 0; }
+.gb-levels button .n { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--l); color: var(--d); display: grid; place-items: center; font-size: 14px; }
+.gb-levels button:active { transform: translateY(2px); border-bottom-width: 2px; border-color: var(--c); background: var(--l); }
+@media (min-width: 700px) { .gb-levels { grid-template-columns: repeat(3, minmax(0, 1fr)); } .game-block > .btn { align-self: flex-start; width: auto; min-width: 280px; padding-left: 28px; padding-right: 28px; } }
+.empty-box { border: 2px dashed var(--line-d); border-radius: 20px; padding: 28px 18px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--faint); margin-bottom: 14px; }
+.empty-box b { color: var(--text); font-size: 18px; }
+.pane-intro { margin: 0 0 14px; }
+.games-grid + .game-chip { margin-top: 14px; }
+
+/* Abas: marcação que desliza, estica no caminho e segue o dedo */
+.ptabs.dragging .ptabs-ind { transition: none; }
+.ptabs.moving .ptabs-ind { animation: indStretch .38s ease; }
+@keyframes indStretch { 35% { scale: 1.1 .9; } 70% { scale: .97 1.03; } }
+.ptabs button { transition: color .22s ease .06s, transform .12s; }
+.ptabs button .ico { transition: transform .2s; }
+.ptabs button.pop .ico { animation: tabIcon .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes tabIcon { 40% { transform: translateY(-3px) scale(1.2) rotate(-6deg); } }
+.ptabs button:active .ico { transform: scale(.85); }
+
+/* ---------- Unidades: acordeão, branca em andamento, destacada quando concluída ---------- */
+.unit .unit-banner {
+  background: #fff; color: var(--text); border: 2px solid var(--line); border-bottom-width: 4px; box-shadow: none;
+  padding: 14px 16px; gap: 12px; transition: background .25s, border-color .25s, color .25s, transform .12s;
+}
+.unit .unit-banner small { color: var(--d); opacity: 1; font-size: 12px; }
+.unit .unit-banner h2 { font-size: 19px; line-height: 1.25; }
+.unit .unit-banner p { color: var(--muted); font-size: 14px; opacity: 1; margin-top: 2px; }
+.unit .ub-bar { background: var(--bg2); max-width: none; }
+.unit .ub-bar i { background: var(--c); }
+.unit .ub-chev { background: var(--bg2); color: var(--muted); }
+.unit:not(.folded) .unit-banner { border-color: var(--c); }
+.unit .unit-banner:active { transform: translateY(2px); border-bottom-width: 2px; }
+.unit.done .unit-banner { background: var(--c); border-color: var(--d); color: #fff; }
+.unit.done .unit-banner small, .unit.done .unit-banner p { color: #fff; opacity: .95; }
+.unit.done .ub-bar { background: rgba(255, 255, 255, .35); }
+.unit.done .ub-bar i { background: #fff; }
+.unit.done .ub-chev { background: rgba(255, 255, 255, .25); color: #fff; }
+.unit-inner .path { padding-top: 64px; }
+.page-learn .unit + .unit, .page-learn .unit:not(.folded) + .unit { margin-top: 12px; }
+.page-learn .unit:not(.folded) { margin-bottom: 4px; }
+.units-tools { font-size: 14px; margin: 0 0 10px; }
+.unit-banner.static { background: #fff; color: var(--text); border: 2px solid var(--line); border-bottom-width: 4px; box-shadow: none; }
+.unit-banner.static small { color: var(--green-t); opacity: 1; }
+.unit-banner.static p { color: var(--muted); }

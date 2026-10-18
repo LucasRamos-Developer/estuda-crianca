@@ -3,7 +3,7 @@
 //   Ao mudar algum deles, aumente a versão abaixo.
 // - Conteúdo em data/*.json: rede primeiro (pega a versão nova quando tem internet)
 //   e cópia salva quando está offline. Atualizar JSON NÃO exige mudar a versão.
-const CACHE = 'estuda-v10';
+const CACHE = 'estuda-v11';
 const DATA_CACHE = 'estuda-dados';
 const ASSETS = [
   './',

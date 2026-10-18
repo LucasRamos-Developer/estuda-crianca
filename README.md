@@ -16,9 +16,12 @@ Site: https://lucasramos-developer.github.io/estuda-crianca/
   - **Português**: trilha própria com os conteúdos do ano.
   - **Outros**: Ciências, História, Geografia, Arte, Educação Física, Inglês e Ensino Religioso juntas,
     com filtro para estudar uma matéria só.
-- **Menu**: Matemática (abas Trilha e Tabuada), Português, Outros, Desafios e Configurações
+- **Menu**: Matemática (abas Trilha, Tabuada e Jogos), Português e Outros (abas Trilha e Jogos), Desafios (abas Desafios,
+  Simulados e Jogos) e Configurações
   (Meu progresso, Área dos pais, Curiosidades, Sons e voz, Sobre o app).
 - Cada passo mostra uma **explicação curta** e depois **perguntas**. Cada passo tem 3 níveis (estrelas).
+- As abas trocam com toque ou deslizando o dedo. As unidades da trilha funcionam como acordeão (uma aberta por vez):
+  brancas em andamento e destacadas na cor da matéria quando concluídas.
 - **3º ano**: conteúdo completo escrito para todas as matérias, ligado aos códigos da BNCC,
   com História e Geografia de Joinville e Inglês dos anos iniciais (rede municipal).
 - **Outros anos**: os passos usam as habilidades da BNCC para estudo e auto-avaliação ("Ainda estou aprendendo" /
@@ -54,7 +57,7 @@ Pela rede local (http) o modo offline e o "instalar" não funcionam; no GitHub P
 ## Publicar
 
 Push na `main` → o GitHub Pages publica sozinho. **Ao mudar qualquer arquivo, aumente a versão do cache** em `sw.js`
-(`estuda-v10` → `estuda-v11`), senão os aparelhos continuam com a versão antiga.
+(`estuda-v11` → `estuda-v12`), senão os aparelhos continuam com a versão antiga.
 
 ## Atualizar o conteúdo (JSON)
 
@@ -89,6 +92,7 @@ Rotina sugerida:
 
 ```bash
 node tools/validar-conteudo.mjs     # confere conteúdo, jogos, simulados, mapa e imagens (sai com erro se algo estiver errado)
+node tools/validar-conteudo.mjs --publicar   # antes de publicar: nenhuma curiosidade apagada e 1 nova por matéria
 python3 tools/gerar-roadmap.py      # atualiza as tabelas "No app" de roadmap/N-ano.md
 git add data && git commit -m "Atualiza conteúdo" && git push
 ```

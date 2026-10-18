@@ -162,6 +162,30 @@ if (cur) {
   }
 }
 
+// ---------- Antes de publicar: curiosidades nunca diminuem e cada matéria ganha pelo menos uma nova ----------
+// Uso: node tools/validar-conteudo.mjs --publicar   (compara com a versão publicada em origin/main)
+if (process.argv.includes('--publicar') && cur) {
+  const { execSync } = await import('node:child_process');
+  let pub = null;
+  for (const ref of ['origin/main', 'HEAD']) {
+    try { pub = JSON.parse(execSync(`git show ${ref}:data/curiosidades.json`, { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString()); break; } catch { /* tenta a próxima */ }
+  }
+  if (!pub) warn('data/curiosidades.json', 'não achei a versão publicada para comparar');
+  else {
+    for (const [k, list] of Object.entries(pub)) {
+      if (k === 'versao' || k === 'fontes' || !Array.isArray(list)) continue;
+      const now = cur[k] || [];
+      // Remoção só por ordem direta do usuário: --permitir-remocao
+      const report = process.argv.includes('--permitir-remocao') ? warn : err;
+      for (const t of list) if (!now.includes(t)) report('data/curiosidades.json', `${k}: curiosidade publicada foi apagada ou alterada: "${t.slice(0, 60)}…"`);
+    }
+    for (const k of SUBJECTS) {
+      const novas = (cur[k] || []).filter((t) => !(pub[k] || []).includes(t)).length;
+      if (novas < 1) err('data/curiosidades.json', `${k}: adicione pelo menos 1 curiosidade nova antes de publicar`);
+    }
+  }
+}
+
 for (const w of warns) console.log(`aviso  ${w}`);
 for (const e of errors) console.log(`ERRO   ${e}`);
 console.log(errors.length ? `\n${errors.length} erro(s). Corrija antes de publicar.` : `\nConteúdo OK (${codes.size} habilidades BNCC, ${ids.size} passos escritos, ${nJogos} jogos, ${nSim} simulados).`);
