@@ -15,6 +15,9 @@ const OP_SHORT = { add: '+', sub: '−', mul: '×', div: '÷', mix: '±' };
 const OP_UNIT = { add: 'add', sub: 'subt', mul: 'mul', div: 'div' };
 const OP_COLOR = { add: 'purple', sub: 'orange', mul: 'green', div: 'blue', mix: 'red' };
 const LEVEL_NAMES = ['Aprender', 'Fixação', 'Domínio'];
+const OP_TAB = { add: 'Somar', sub: 'Tirar', mul: 'Vezes', div: 'Dividir' };
+const OP_VERB = { add: 'somar', sub: 'tirar', mul: 'vezes', div: 'dividir' };
+const CH_MODES = [['quiz', 'clipboard', 'Perguntas', 'Responda a tabuada toda'], ['time', 'clock', '1 minuto', 'Quantas você acerta?'], ['survival', 'heart', '3 vidas', 'Até errar 3 vezes']];
 const WEEKDAY = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const CAN_SPEAK = 'speechSynthesis' in window;
 const pct = (x) => (x == null ? '—' : `${Math.round(x * 100)}%`);
@@ -25,8 +28,8 @@ const initial = () => esc((S().profile.name || '?').trim().charAt(0).toUpperCase
 
 const ui = {
   tab: 'learn', pop: null, parentOk: false, pin: '', pinStep: null, pinFirst: '',
-  timeOp: 'mix', testOp: 'mul', gridOp: 'mul',
-  tableOp: 'mul', tableN: 2, tableHide: false, revealed: new Set(),
+  testOp: 'mul', gridOp: 'mul', tableOp: 'mul',
+  chOp: 'mul', chN: 'all', chMode: 'quiz',
   onbName: '', onbGoal: 20,
 };
 let session = null;
@@ -123,34 +126,27 @@ function renderStudy(n) {
   </div></div>`;
 }
 
-// ---------- Aba Tabuada ----------
+// ---------- Aba Tabuada (livrinho com as 9 tabuadas) ----------
 function renderTable() {
-  const op = ui.tableOp, n = ui.tableN;
-  const rows = E.tableRows(op, n);
+  const op = ui.tableOp;
   return `<h1 class="page-title">Tabuada</h1>
-  <div class="op-tabs">${OPS.map((o) => `<button class="op-tab c-${OP_COLOR[o]} ${o === op ? 'on' : ''}" data-a="table-op" data-v="${o}"><b>${OP_SHORT[o]}</b><span>${OP_NAME[o]}</span></button>`).join('')}</div>
-  <div class="num-pick c-${OP_COLOR[op]}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => `<button class="${k === n ? 'on' : ''}" data-a="table-n" data-v="${k}">${k}</button>`).join('')}</div>
-  <div class="table-layout">
-    <section class="table-card c-${OP_COLOR[op]}">
-      <div class="table-head">
-        <div><h2>Tabuada do ${n}</h2><small>${OP_NAME[op]}</small></div>
-        <button class="hide-btn ${ui.tableHide ? 'on' : ''}" data-a="table-hide">${icon(ui.tableHide ? 'eye' : 'eyeOff', 20)}${ui.tableHide ? 'Mostrar' : 'Esconder'}</button>
-      </div>
-      <div class="table-rows">${rows.map((r, i) => {
-        const hidden = ui.tableHide && !ui.revealed.has(i);
-        return `<button class="t-row" data-a="table-row" data-v="${i}"><span class="t-expr">${r.a} ${E.SYM[op]} ${r.b} =</span><span class="t-res ${hidden ? 'hid' : ''}">${hidden ? '?' : r.res}</span></button>`;
-      }).join('')}</div>
-      <p class="muted center small">${ui.tableHide ? 'Tente lembrar e toque para conferir.' : 'Toque numa conta para ver a explicação.'}</p>
-    </section>
-    <aside class="steps">
-      <div class="step"><span class="num">1</span><div class="grow"><h3>Veja</h3><p>Leia a tabuada${CAN_SPEAK ? ' ou ouça em voz alta' : ''}.</p>
-        ${CAN_SPEAK ? `<button class="btn white sm" data-a="table-speak">${icon('speaker', 20)} Ouvir</button>` : ''}</div></div>
-      <div class="step"><span class="num">2</span><div class="grow"><h3>Aprenda</h3><p>Conta por conta, com bolinhas e explicação.</p>
-        <button class="btn" data-a="walk-start">Aprender passo a passo</button></div></div>
-      <div class="step"><span class="num">3</span><div class="grow"><h3>Responda</h3><p>Faça a lição e ganhe estrelas.</p>
-        <button class="btn blue" data-a="table-lesson">Fazer a lição</button></div></div>
-    </aside>
-  </div>`;
+  <div class="op-tabs">${OPS.map((o) => `<button class="op-tab c-${OP_COLOR[o]} ${o === op ? 'on' : ''}" data-a="table-op" data-v="${o}"><b>${OP_SHORT[o]}</b><span>${OP_TAB[o]}</span></button>`).join('')}</div>
+  <div class="book c-${OP_COLOR[op]}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button class="tcard" data-a="table-open" data-v="${n}">
+    <h3>Tabuada do ${n}</h3>
+    <ol>${E.tableRows(op, n).map((r) => `<li><span>${r.a} ${E.SYM[op]} ${r.b} =</span><b>${r.res}</b></li>`).join('')}</ol>
+  </button>`).join('')}</div>
+  <p class="muted center small">Toque numa tabuada para ver grande, ouvir e praticar.</p>`;
+}
+
+function openTable(n) {
+  const op = ui.tableOp;
+  sfx.tap();
+  showModal(`<div class="c-${OP_COLOR[op]}"><h2 class="tbig-title">Tabuada do ${n}</h2><span class="muted">${OP_NAME[op]}</span></div>
+    <ol class="tbig c-${OP_COLOR[op]}">${E.tableRows(op, n).map((r) => `<li><span>${r.a} ${E.SYM[op]} ${r.b} =</span><b>${r.res}</b></li>`).join('')}</ol>
+    ${CAN_SPEAK ? `<button class="btn white" data-a="table-speak" data-v="${n}">${icon('speaker', 20)} Ouvir a tabuada</button>` : ''}
+    <button class="btn white" data-a="walk-start" data-v="${n}">${icon('book', 20)} Aprender conta por conta</button>
+    <button class="btn" data-a="table-quiz" data-v="${n}">Desafio desta tabuada</button>
+    <button class="btn ghost" data-a="modal-close">Fechar</button>`);
 }
 
 function dotsHtml(v) {
@@ -168,16 +164,6 @@ function dotsHtml(v) {
 function explainHtml(r) {
   const ex = E.explainFact(r);
   return `${dotsHtml(ex.visual)}<div class="help-lines">${ex.lines.map((l) => `<div>${esc(l)}</div>`).join('')}</div>`;
-}
-
-function tableRowTap(i) {
-  const r = E.tableRows(ui.tableOp, ui.tableN)[i];
-  if (ui.tableHide && !ui.revealed.has(i)) { ui.revealed.add(i); sfx.correct(); render(); return; }
-  sfx.tap();
-  showModal(`<div class="explain-expr">${r.a} ${E.SYM[r.op]} ${r.b} = <b>${r.res}</b></div>
-    ${explainHtml(r)}
-    ${CAN_SPEAK ? `<button class="btn white" data-a="speak-fact" data-v="${i}">${icon('speaker', 20)} Ouvir</button>` : ''}
-    <button class="btn" data-a="modal-close">Entendi</button>`);
 }
 
 function speak(text) {
@@ -290,38 +276,50 @@ function renderChallenges() {
   const dailyDone = s.daily[E.dayKey()];
   const weak = E.weakFacts(30).length;
   const seen = E.seenNodes().length;
-  const opPick = (act, cur, ops, rec) => `<div class="op-pick" style="--n:${ops.length}">${ops.map((op) => `<button class="option ${cur === op ? 'sel' : ''}" data-a="${act}" data-v="${op}">${OP_SHORT[op]}<small>${rec(op)}</small></button>`).join('')}</div>`;
-  const card = (act, ic, color, title, desc, extra = '', done = false) => `<button class="card ${done ? 'done' : ''}" data-a="ch" data-v="${act}">
-    <div class="ic c-${color}">${icon(ic, 30)}</div><div class="grow"><h3>${title}</h3><p>${desc}</p>${extra}</div></button>`;
-  return `<h1 class="page-title">Desafios</h1>
-  <div class="cards">
-  ${card('daily', 'calendar', 'orange', 'Desafio do dia', '10 contas misturadas. Ganhe +20 XP.', `<div class="rec">${dailyDone != null ? `Feito hoje: ${dailyDone}/10. Volte amanhã!` : 'Novo desafio disponível'}</div>`, dailyDone != null)}
-  ${card('surprise', 'shuffle', 'green', 'Revisão surpresa', seen ? `Perguntas de tudo o que você já estudou (${seen} ${seen === 1 ? 'lição' : 'lições'}).` : 'Complete uma lição da trilha para liberar.', '', !seen)}
-  <div class="card col">
-    <div class="row"><div class="ic c-purple">${icon('clipboard', 30)}</div>
-      <div class="grow"><h3>Teste de progresso</h3><p>2 contas de cada tabuada, sem ajuda. No final sai um boletim.</p></div></div>
-    ${opPick('test-op', ui.testOp, OPS, (op) => { const t = s.tests.find((x) => x.op === op); return t ? `${t.score}/${t.total}` : '—'; })}
-    <button class="btn purple" data-a="ch" data-v="test">Fazer teste de ${OP_NAME[ui.testOp].toLowerCase()}</button>
-  </div>
-  <div class="card col">
-    <div class="row"><div class="ic c-blue">${icon('clock', 30)}</div>
-      <div class="grow"><h3>Contra o relógio</h3><p>Quantas você acerta em 60 segundos?</p></div></div>
-    ${opPick('time-op', ui.timeOp, [...OPS, 'mix'], (op) => `Rec. ${s.best.time[op] || 0}`)}
-    <button class="btn blue" data-a="ch" data-v="time">Jogar ${OP_NAME[ui.timeOp].toLowerCase()}</button>
-  </div>
-  ${card('survival', 'heart', 'red', 'Sobrevivência', '3 vidas e as contas vão ficando difíceis.', `<div class="rec">Recorde: ${s.best.survival}</div>`)}
-  ${card('master', 'trophy', 'yellow', 'Mestre da tabuada', '20 contas de vezes. Acerte 18 para ganhar o troféu.', `<div class="rec">${s.best.master >= 18 ? 'Troféu conquistado · ' : ''}Melhor: ${s.best.master}/20</div>`)}
-  ${card('errors', 'target', 'red', 'Treino dos erros', weak ? `Pratique as ${weak} contas que você mais erra.` : 'Nenhum erro para treinar.', '', !weak)}
+  const { chOp: op, chN: n, chMode: mode } = ui;
+  const rec = E.record(mode, op, n);
+  const recLabel = mode === 'quiz' ? (rec ? `Melhor: ${rec}/${n === 'all' ? 20 : 10}` : 'Ainda sem nota') : `Recorde: ${rec}`;
+  const card = (act, ic, color, title, desc, info, btn, done = false, extra = '') => `<div class="card ${done ? 'done' : ''}">
+    <div class="card-top"><div class="ic c-${color}">${icon(ic, 28)}</div><div class="grow"><h3>${title}</h3><p>${desc}</p></div></div>
+    ${extra}
+    <div class="rec">${info}</div>
+    <button class="btn ${color === 'purple' ? 'purple' : color === 'orange' ? 'orange' : color === 'green' ? '' : 'blue'}" data-a="ch" data-v="${act}" ${done ? 'disabled' : ''}>${btn}</button>
   </div>`;
+  return `<h1 class="page-title">Desafios</h1>
+  <section class="builder c-${OP_COLOR[op]}">
+    <h2>Desafio da tabuada</h2>
+    <div class="b-step"><span class="b-label">1. Operação</span>
+      <div class="op-tabs small">${OPS.map((o) => `<button class="op-tab c-${OP_COLOR[o]} ${o === op ? 'on' : ''}" data-a="ch-op" data-v="${o}"><b>${OP_SHORT[o]}</b><span>${OP_TAB[o]}</span></button>`).join('')}</div></div>
+    <div class="b-step"><span class="b-label">2. Qual tabuada?</span>
+      <div class="num-pick">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => `<button class="${n === k ? 'on' : ''}" data-a="ch-n" data-v="${k}">${k}</button>`).join('')}<button class="all ${n === 'all' ? 'on' : ''}" data-a="ch-n" data-v="all">Todas</button></div></div>
+    <div class="b-step"><span class="b-label">3. Tipo de desafio</span>
+      <div class="modes">${CH_MODES.map(([m, ic, label, desc]) => `<button class="mode ${m === mode ? 'on' : ''}" data-a="ch-mode" data-v="${m}">${icon(ic, 24)}<b>${label}</b><small>${desc}</small></button>`).join('')}</div></div>
+    <div class="b-go"><span class="rec">${recLabel}</span><button class="btn" data-a="ch" data-v="table">Começar · ${n === 'all' ? 'todas as tabuadas' : `tabuada do ${n}`} de ${OP_VERB[op]}</button></div>
+  </section>
+  <h2 class="section-title">Outros desafios</h2>
+  <div class="cards">
+    ${card('daily', 'calendar', 'orange', 'Desafio do dia', '10 contas misturadas. Ganhe +20 XP.', dailyDone != null ? `Feito hoje: ${dailyDone}/10` : 'Novo desafio disponível', dailyDone != null ? 'Volte amanhã' : 'Jogar', dailyDone != null)}
+    ${card('test', 'clipboard', 'purple', 'Teste de progresso', '2 contas de cada tabuada, sem ajuda. No final sai um boletim.', (() => { const t = s.tests.find((x) => x.op === ui.testOp); return t ? `Último: ${t.score}/${t.total}` : 'Ainda não fez'; })(), `Testar ${OP_NAME[ui.testOp].toLowerCase()}`, false,
+      `<div class="seg mini">${OPS.map((o) => `<button class="${ui.testOp === o ? 'on' : ''}" data-a="test-op" data-v="${o}">${OP_SHORT[o]}</button>`).join('')}</div>`)}
+    ${card('surprise', 'shuffle', 'green', 'Revisão surpresa', 'Perguntas de tudo o que você já estudou na trilha.', seen ? `${seen} ${seen === 1 ? 'lição estudada' : 'lições estudadas'}` : 'Faça uma lição da trilha para liberar', 'Jogar', !seen)}
+    ${card('errors', 'target', 'blue', 'Treino dos erros', 'Pratique as contas que você mais erra.', weak ? `${weak} ${weak === 1 ? 'conta' : 'contas'} para treinar` : 'Nenhum erro para treinar', 'Treinar', !weak)}
+  </div>`;
+}
+
+function startTableChallenge(op, n, mode) {
+  const name = n === 'all' ? `Todas as tabuadas de ${OP_VERB[op]}` : `Tabuada do ${n} de ${OP_VERB[op]}`;
+  if (mode === 'quiz') return startSession({ kind: 'quiz', op, n, title: name, questions: E.tableQuiz(op, n), retry: false, help: true });
+  if (mode === 'time') return startSession({ kind: 'time', op, n, title: `1 minuto · ${name}`, instant: true, timeLimit: 60000, gen: () => E.tableChallengeQuestion(op, n) });
+  return startSession({ kind: 'survival', op, n, title: `3 vidas · ${name}`, instant: true, hearts: 3, gen: () => E.tableChallengeQuestion(op, n) });
 }
 
 function startChallenge(kind) {
   const s = S();
+  if (kind === 'table') return startTableChallenge(ui.chOp, ui.chN, ui.chMode);
   if (kind === 'daily') {
     if (s.daily[E.dayKey()] != null) return toast('Você já fez o desafio de hoje. Volte amanhã!');
     startSession({ kind, title: 'Desafio do dia', questions: E.dailyQuestions(), retry: false, help: true });
   }
-  if (kind === 'master') startSession({ kind, title: 'Mestre da tabuada', questions: E.masterQuestions(), retry: false });
   if (kind === 'surprise') {
     const qs = E.surpriseQuestions();
     if (!qs.length) return toast('Complete pelo menos uma lição na trilha primeiro.');
@@ -335,13 +333,6 @@ function startChallenge(kind) {
     const qs = E.errorQuestions();
     if (!qs.length) return toast('Você ainda não tem erros para treinar.');
     startSession({ kind, title: 'Treino dos erros', questions: qs, retry: true, help: true });
-  }
-  if (kind === 'time') {
-    const op = ui.timeOp;
-    startSession({ kind, op, title: `Contra o relógio · ${OP_NAME[op]}`, instant: true, timeLimit: 60000, gen: () => E.challengeQuestion(op, op === 'mix' ? 1 : 2) });
-  }
-  if (kind === 'survival') {
-    startSession({ kind, title: 'Sobrevivência', instant: true, hearts: 3, gen: (n) => E.challengeQuestion('mix', Math.min(2, Math.floor(n / 6))) });
   }
 }
 
@@ -418,7 +409,7 @@ function renderParents() {
     if (!s.settings.pin && ui.pinStep !== 'confirm') ui.pinStep = 'new';
     if (s.settings.pin) ui.pinStep = 'enter';
     const title = { new: 'Crie um PIN de 4 números', confirm: 'Repita o PIN', enter: 'Área dos pais' }[ui.pinStep];
-    const sub = { new: 'Ele protege a área dos pais.', confirm: 'Para confirmar.', enter: 'Digite o PIN para ver o progresso.' }[ui.pinStep];
+    const sub = { new: 'Primeiro acesso: escolha 4 números que só o adulto saiba. Ele protege a área dos pais.', confirm: 'Digite o mesmo PIN de novo para confirmar.', enter: 'Digite o PIN que você criou no primeiro acesso.' }[ui.pinStep];
     return `<div class="pin-box">
       <div class="big-badge c-blue">${icon('lock', 48)}</div><h1 class="page-title">${title}</h1><p class="muted">${sub}</p>
       <div class="pin-dots">${[0, 1, 2, 3].map((i) => `<i class="${ui.pin.length > i ? 'on' : ''}"></i>`).join('')}</div>
@@ -804,25 +795,24 @@ function endSession() {
     extra = `<div class="boletim">${per.map((c, i) => `<div class="b-row"><span>${esc(E.testGroupLabel(s.op, i + 1))}</span><span>${'<i class="mark ok"></i>'.repeat(c)}${'<i class="mark no"></i>'.repeat(2 - c)}</span></div>`).join('')}</div>
       <p class="big-p">${train.length ? `Para treinar: <b>${train.map(([, n]) => `tabuada do ${n}`).join(', ')}</b>` : 'Acertou tudo! Parabéns!'}</p>`;
   }
-  if (s.kind === 'master') {
-    xp = 15 + (correct >= 18 ? 10 : 0);
-    headline = correct >= 18 ? 'Troféu conquistado!' : 'Quase lá!';
-    sub = `Você acertou ${correct} de 20${correct >= 18 ? '' : '. Precisa de 18 para o troféu.'}`;
-    st.best.master = Math.max(st.best.master, correct);
+  if (s.kind === 'quiz') {
+    xp = s.n === 'all' ? 15 : 10;
+    headline = correct === total ? 'Acertou tudo!' : 'Desafio concluído!';
+    sub = `${s.title}: ${correct} de ${total}`;
+    if (E.saveRecord('quiz', s.op, s.n, correct) && correct > 0) extra = record;
+    if (s.op === 'mul' && s.n === 'all') st.best.master = Math.max(st.best.master, correct);
   }
   if (s.kind === 'time') {
     xp = Math.min(30, Math.max(1, Math.round(correct / 2)));
-    if (correct > (st.best.time[s.op] || 0)) extra = record;
     headline = 'Tempo esgotado!';
-    sub = `${correct} certas em 60 segundos`;
-    st.best.time[s.op] = Math.max(st.best.time[s.op] || 0, correct);
+    sub = `${correct} certas em 1 minuto`;
+    if (E.saveRecord('time', s.op, s.n, correct) && correct > 0) extra = record;
   }
   if (s.kind === 'survival') {
     xp = Math.min(30, Math.max(1, Math.round(correct / 2)));
-    if (correct > st.best.survival) extra = record;
     headline = 'Fim de jogo!';
     sub = `Você fez ${correct} pontos`;
-    st.best.survival = Math.max(st.best.survival, correct);
+    if (E.saveRecord('survival', s.op, s.n, correct) && correct > 0) extra = record;
   }
   const res = E.finishSession({ kind: s.kind, title: s.title, nodeId: s.kind === 'lesson' ? s.nodeId : null, correct, total, ms: s.activeMs, xp, perfect });
   sfx.complete();
@@ -959,21 +949,21 @@ document.addEventListener('click', (ev) => {
     case 'study-go': lessonGo(studyNode.id); break;
     case 'study-walk': { const n = studyNode; startWalk(n.op, n.n, () => lessonGo(n.id)); break; }
     case 'study-close': closeOverlay(); break;
-    case 'table-op': ui.tableOp = v; ui.revealed.clear(); sfx.tap(); render(); break;
-    case 'table-n': ui.tableN = Number(v); ui.revealed.clear(); sfx.tap(); render(); break;
-    case 'table-hide': ui.tableHide = !ui.tableHide; ui.revealed.clear(); sfx.tap(); render(); break;
-    case 'table-row': tableRowTap(Number(v)); break;
-    case 'table-speak': speak(E.tableRows(ui.tableOp, ui.tableN).map(E.speakText).join('. ')); break;
-    case 'speak-fact': speak(E.speakText(E.tableRows(walk ? walk.op : ui.tableOp, walk ? walk.n : ui.tableN)[Number(v)])); break;
-    case 'walk-start': startWalk(ui.tableOp, ui.tableN, null); break;
-    case 'table-lesson': startNodeLesson(`${OP_UNIT[ui.tableOp]}-${ui.tableN}`, true); break;
+    case 'table-op': ui.tableOp = v; sfx.tap(); render(); break;
+    case 'table-open': openTable(Number(v)); break;
+    case 'table-speak': speak(E.tableRows(ui.tableOp, Number(v)).map(E.speakText).join('. ')); break;
+    case 'table-quiz': startTableChallenge(ui.tableOp, Number(v), 'quiz'); break;
+    case 'speak-fact': if (walk) speak(E.speakText(walk.rows[Number(v)])); break;
+    case 'walk-start': startWalk(ui.tableOp, Number(v), null); break;
     case 'walk-next': walkNext(); break;
     case 'walk-prev': if (walk && walk.idx > 0) { walk.idx--; walk.shown = true; renderWalk(); } break;
     case 'walk-close': closeOverlay(); break;
     case 'walk-again': walk.idx = 0; walk.shown = false; renderWalk(); break;
     case 'walk-apply': walkApply(); break;
     case 'ch': startChallenge(v); break;
-    case 'time-op': ui.timeOp = v; sfx.tap(); render(); break;
+    case 'ch-op': ui.chOp = v; sfx.tap(); render(); break;
+    case 'ch-n': ui.chN = v === 'all' ? 'all' : Number(v); sfx.tap(); render(); break;
+    case 'ch-mode': ui.chMode = v; sfx.tap(); render(); break;
     case 'test-op': ui.testOp = v; sfx.tap(); render(); break;
     case 'grid-op': ui.gridOp = v; sfx.tap(); render(); break;
     case 'help': showHelp(); break;

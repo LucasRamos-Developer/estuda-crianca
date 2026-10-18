@@ -292,7 +292,7 @@ const fresh = () => ({
   days: {},
   nodes: {},
   facts: {},
-  best: { time: { add: 0, mul: 0, div: 0, sub: 0, mix: 0 }, survival: 0, master: 0, streak: 0 },
+  best: { time: { add: 0, mul: 0, div: 0, sub: 0, mix: 0 }, survival: 0, master: 0, streak: 0, ch: {} },
   tests: [],
   daily: {},
   ach: {},
@@ -453,6 +453,20 @@ export function finishSession({ kind, title, nodeId, correct, total, ms, xp, per
 
 // ---------- Conquistas ----------
 const unitNodes = (u) => UNITS.find((x) => x.id === u).nodes.filter((n) => !n.review);
+// Recordes dos desafios de tabuada, por tipo:operação:tabuada
+export const recordKey = (mode, op, n) => `${mode}:${op}:${n}`;
+export const record = (mode, op, n) => state.best.ch[recordKey(mode, op, n)] || 0;
+function bestOf(mode) {
+  const legacy = mode === 'time' ? Math.max(0, ...Object.values(state.best.time)) : state.best.survival;
+  return Math.max(legacy, 0, ...Object.entries(state.best.ch).filter(([k]) => k.startsWith(`${mode}:`)).map(([, v]) => v));
+}
+export function saveRecord(mode, op, n, score) {
+  const k = recordKey(mode, op, n);
+  const isNew = score > (state.best.ch[k] || 0);
+  if (isNew) state.best.ch[k] = score;
+  return isNew;
+}
+
 export const ACHIEVEMENTS = [
   { id: 'first', title: 'Primeiro passo', desc: 'Complete a primeira lição', test: () => (state.flags.lessons || 0) >= 1 },
   { id: 'perfect', title: 'Perfeito!', desc: 'Faça uma lição sem errar nada', test: () => !!state.flags.perfect },
@@ -468,12 +482,12 @@ export const ACHIEVEMENTS = [
   { id: 'divAll', title: 'Divide e conquista', desc: 'Ganhe 1 estrela em toda a divisão', test: () => unitNodes('div').every((n) => stars(n.id) >= 1) },
   { id: 'subAll', title: 'Craque da subtração', desc: 'Ganhe 1 estrela em toda a tabuada de tirar', test: () => unitNodes('subt').every((n) => stars(n.id) >= 1) },
   { id: 'legend', title: 'Lenda da matemática', desc: 'Todas as lições com 3 estrelas', test: () => ALL_NODES.every((n) => stars(n.id) >= 3) },
-  { id: 'speed15', title: 'Relâmpago', desc: '15 pontos no Contra o relógio', test: () => Math.max(...Object.values(state.best.time)) >= 15 },
-  { id: 'speed25', title: 'Foguete', desc: '25 pontos no Contra o relógio', test: () => Math.max(...Object.values(state.best.time)) >= 25 },
-  { id: 'surv10', title: 'Sobrevivente', desc: '10 pontos no Sobrevivência', test: () => state.best.survival >= 10 },
-  { id: 'surv25', title: 'Invencível', desc: '25 pontos no Sobrevivência', test: () => state.best.survival >= 25 },
+  { id: 'speed15', title: 'Relâmpago', desc: '15 pontos em 1 minuto', test: () => bestOf('time') >= 15 },
+  { id: 'speed25', title: 'Foguete', desc: '25 pontos em 1 minuto', test: () => bestOf('time') >= 25 },
+  { id: 'surv10', title: 'Sobrevivente', desc: '10 pontos no desafio de 3 vidas', test: () => bestOf('survival') >= 10 },
+  { id: 'surv25', title: 'Invencível', desc: '25 pontos no desafio de 3 vidas', test: () => bestOf('survival') >= 25 },
   { id: 'daily5', title: 'Todo dia', desc: 'Complete 5 desafios do dia', test: () => Object.keys(state.daily).length >= 5 },
-  { id: 'master', title: 'Mestre da tabuada', desc: 'Acerte 18 de 20 no desafio Mestre', test: () => state.best.master >= 18 },
+  { id: 'master', title: 'Mestre da tabuada', desc: 'Acerte 18 de 20 em todas as tabuadas de vezes', test: () => state.best.master >= 18 },
   { id: 'test', title: 'Boletim nota 10', desc: 'Acerte tudo num Teste de progresso', test: () => state.tests.some((t) => t.score === t.total) },
   { id: 'xp1000', title: '1000 XP', desc: 'Junte 1000 pontos de experiência', test: () => state.xp >= 1000 },
 ];
@@ -758,4 +772,28 @@ export function explainFact(f) {
 // Lição de prática de uma tabuada escolhida na aba Tabuada
 export function tableQuestions(op, n, level = 0) {
   return questionsFromFacts(shuffle(tableRows(op, n)), level);
+}
+
+// ---------- Desafios de tabuada (operação + tabuada escolhida) ----------
+const QUIZ_MIX = [['expr', 'keypad', 4], ['expr', 'choice', 2], ['missing', 'choice', 2], ['tf', 'tf', 1]];
+
+function challengeFact(op, n) {
+  const pool = (n === 'all' ? range(1, 9) : [n]).flatMap((t) => tableKs(op).map((k) => [t, k]));
+  const [x, y] = weightedPick(pool, (p) => weakness(KEY_OF[op](p)));
+  return FACT_OF[op](x, y);
+}
+
+// 10 perguntas de uma tabuada (todas as contas dela) ou 20 de todas as tabuadas
+export function tableQuiz(op, n) {
+  let facts;
+  if (n === 'all') {
+    const pool = range(1, 9).flatMap((t) => tableKs(op).map((k) => [t, k]));
+    facts = sampleWeighted(pool, 20, KEY_OF[op], 1).map(([x, y]) => FACT_OF[op](x, y));
+  } else facts = shuffle(tableKs(op)).map((k) => FACT_OF[op](n, k));
+  return facts.map((f) => { const [kind, mode] = weightedPick(QUIZ_MIX, (m) => m[2]); return buildQuestion(f, kind, mode); });
+}
+
+// Pergunta rápida (escolha) para 1 minuto e 3 vidas
+export function tableChallengeQuestion(op, n) {
+  return buildQuestion(challengeFact(op, n), 'expr', 'choice');
 }

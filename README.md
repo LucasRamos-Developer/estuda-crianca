@@ -43,7 +43,7 @@ Se não abrir, libere a porta no firewall do computador (ex.: `sudo ufw allow 80
 ## Atualizando o app
 
 O service worker (`sw.js`) guarda os arquivos para funcionar offline.
-**Sempre que mudar algum arquivo, aumente a versão** em `sw.js` (`tabuada-v2` → `tabuada-v3`),
+**Sempre que mudar algum arquivo, aumente a versão** em `sw.js` (`tabuada-v3` → `tabuada-v4`),
 senão os aparelhos continuam com a versão antiga. A nova versão aparece ao abrir o app pela segunda vez.
 
 ## Estrutura
