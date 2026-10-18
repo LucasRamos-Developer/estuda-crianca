@@ -59,27 +59,27 @@ function topbar() {
 }
 
 function nav() {
-  const onMath = (ui.tab === 'learn' && ui.subj === 'ma') || ui.tab === 'table';
-  const onOthers = ui.tab === 'others' || (ui.tab === 'learn' && ui.subj !== 'ma');
-  const btn = (attrs, on, ic, label) => `<button class="${on ? 'on' : ''}" ${attrs}>${icon(ic, 26)}<span>${label}</span></button>`;
+  const onLearn = ui.tab === 'learn';
+  const onGeral = onLearn && C.isGeral(ui.subj);
+  const btn = (attrs, on, ic, label) => `<button class="${on ? 'on' : ''}" ${attrs}>${ic}<span>${label}</span></button>`;
   const main = [
-    btn('data-a="subj" data-v="ma"', onMath, 'home', 'Matemática'),
-    btn('data-a="tab" data-v="others"', onOthers, 'book', 'Matérias'),
-    btn('data-a="tab" data-v="challenges"', ui.tab === 'challenges', 'bolt', 'Desafios'),
-    btn('data-a="tab" data-v="progress"', ui.tab === 'progress', 'chart', 'Progresso'),
-    btn('data-a="tab" data-v="parents"', ui.tab === 'parents', 'lock', 'Pais'),
+    btn('data-a="subj" data-v="ma"', (onLearn && ui.subj === 'ma') || ui.tab === 'table', `<span class="nav-glyph">123</span>`, 'Matemática'),
+    btn('data-a="subj" data-v="lp"', onLearn && ui.subj === 'lp', `<span class="nav-glyph">Aa</span>`, 'Português'),
+    btn('data-a="subj" data-v="geral"', onGeral, icon('layers', 26), 'Geral'),
+    btn('data-a="tab" data-v="challenges"', ui.tab === 'challenges', icon('bolt', 26), 'Desafios'),
+    btn('data-a="tab" data-v="progress"', ui.tab === 'progress', icon('chart', 26), 'Progresso'),
+    btn('data-a="tab" data-v="parents"', ui.tab === 'parents', icon('lock', 26), 'Pais'),
   ];
-  // No computador: lista das outras matérias no menu lateral
+  // No computador: filtros da trilha Geral no menu lateral
   const crs = C.course(YEAR());
-  const link = (id, glyph, name, color) => `<button class="nav-subj c-${color} ${ui.tab === 'learn' && ui.subj === id ? 'on' : ''}" data-a="subj" data-v="${id}"><span class="sic">${glyph}</span><span>${name}</span></button>`;
-  const others = `<div class="nav-subjects"><div class="nav-title">Outras matérias · ${YEAR()}º ano</div>
-    ${crs.subjects.filter((sb) => sb.id !== 'ma').map((sb) => link(sb.id, subjGlyph(sb, 18), sb.full, sb.color)).join('')}
-    ${link('all', icon('layers', 18), 'Todas juntas', 'green')}
+  const link = (id, glyph, name, color) => `<button class="nav-subj c-${color} ${onLearn && ui.subj === id ? 'on' : ''}" data-a="subj" data-v="${id}"><span class="sic">${glyph}</span><span>${name}</span></button>`;
+  const geral = `<div class="nav-subjects"><div class="nav-title">Geral · filtrar matéria</div>
+    ${crs.subjects.filter((sb) => C.isGeral(sb.id)).map((sb) => link(sb.id, subjGlyph(sb, 18), sb.full, sb.color)).join('')}
   </div>`;
-  return `<nav class="nav"><div class="brand">Estuda Criança</div>${main.join('')}${others}</nav>`;
+  return `<nav class="nav"><div class="brand">Estuda Criança</div>${main.join('')}${geral}</nav>`;
 }
 
-const TABS = { others: renderOthers, learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
+const TABS = { learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
 
 // ---------- Trilha ----------
 const OFFSETS = [0, 44, 66, 44, 0, -44, -66, -44];
@@ -87,42 +87,49 @@ const OFFSETS = [0, 44, 66, 44, 0, -44, -66, -44];
 function renderLearn() {
   const year = YEAR();
   const crs = C.course(year);
-  if (ui.subj !== 'all' && !crs.subjects.some((s) => s.id === ui.subj)) ui.subj = 'ma';
-  const cur = ui.subj === 'all' ? null : crs.subjects.find((s) => s.id === ui.subj);
-  const back = ui.subj === 'ma' ? '' : `<button class="back-link" data-a="tab" data-v="others">${icon('left', 20)} Outras matérias</button>`;
-  if (!cur) {
-    const done = crs.all.filter((n) => E.stars(n.id) >= 1).length;
-    return `${back}
-      <div class="unit-banner c-green"><div><small>${year}º ano · Todas as matérias juntas</small><h2>Um pouco de cada matéria</h2><p>Um passo de cada matéria, em sequência · ${done}/${crs.all.length} feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
-      <div class="path">${pathNodes(year, crs.all, true)}</div>`;
-  }
+  if (ui.subj !== 'geral' && !crs.subjects.some((s) => s.id === ui.subj)) ui.subj = 'ma';
+  if (C.isGeral(ui.subj)) return renderGeral(year, crs);
+  const cur = crs.subjects.find((s) => s.id === ui.subj);
   const prog = C.subjectProgress(year, cur.id);
-  const head = cur.id === 'ma'
-    ? `<div class="math-head"><div><small>${year}º ano · matéria principal</small><h1>Matemática</h1><p class="muted">${prog.done}/${prog.total} passos feitos</p></div>
-        <button class="tool-card c-green" data-a="tab" data-v="table">${icon('book', 26)}<div class="grow"><b>Tabuadas</b><small>Ver, ouvir e aprender as tabuadas</small></div>${icon('right', 22)}</button></div>`
-    : `${back}<h1 class="page-title">${cur.full}</h1>`;
-  return `${head}${cur.units.map((u, i) => `<section class="unit">
-      <div class="unit-banner c-${cur.color}"><div><small>${cur.full} · ${year}º ano · Unidade ${i + 1}</small><h2>${esc(u.title)}</h2>
-        <p>${u.nodes.filter((n) => E.stars(n.id) >= 1).length}/${u.nodes.length} passos feitos</p></div><div class="big">${subjGlyph(cur, 40)}</div></div>
-      <div class="path">${pathNodes(year, u.nodes, false)}</div>
-    </section>`).join('')}
-    ${cur.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
+  const head = `<div class="main-head c-${cur.color}"><div><small>${year}º ano · trilha principal</small><h1>${cur.full}</h1><p class="muted">${prog.done}/${prog.total} passos feitos</p></div></div>${cur.id === 'ma' ? mathTabs('trail') : ''}`;
+  return `${head}${unitsHtml(year, cur)}
+    ${cur.authored || cur.id === 'ma' ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
 }
 
-// Área separada com as outras matérias
-function renderOthers() {
-  const year = YEAR();
-  const crs = C.course(year);
-  const all = crs.all;
-  const tile = (id, color, glyph, name, sub) => `<button class="subj-tile c-${color}" data-a="subj" data-v="${id}">
-    <span class="sic">${glyph}</span><b>${name}</b><small>${sub}</small></button>`;
-  return `<h1 class="page-title">Outras matérias</h1>
-    <p class="muted" style="margin:-8px 0 16px">${year}º ano · cada matéria tem a sua trilha</p>
-    <div class="subj-grid">
-      ${crs.subjects.filter((sb) => sb.id !== 'ma').map((sb) => { const p = C.subjectProgress(year, sb.id); return tile(sb.id, sb.color, subjGlyph(sb, 26), sb.full, `${p.done}/${p.total} passos`); }).join('')}
-    </div>
-    <h2 class="section-title">Todas juntas</h2>
-    <button class="tool-card c-green" data-a="subj" data-v="all">${icon('layers', 26)}<div class="grow"><b>Trilha com todas as matérias</b><small>Um passo de cada matéria, em sequência · ${all.filter((n) => E.stars(n.id) >= 1).length}/${all.length}</small></div>${icon('right', 22)}</button>`;
+// Abas da Matemática: Trilha | Tabuada
+function mathTabs(active) {
+  return `<div class="math-tabs c-green">
+    <button class="${active === 'trail' ? 'on' : ''}" data-a="subj" data-v="ma">${icon('home', 20)} Trilha</button>
+    <button class="${active === 'table' ? 'on' : ''}" data-a="tab" data-v="table">${icon('book', 20)} Tabuada</button>
+  </div>`;
+}
+
+function unitsHtml(year, subj) {
+  return subj.units.map((u, i) => `<section class="unit">
+      <div class="unit-banner c-${subj.color}"><div><small>${subj.full} · Unidade ${i + 1}${u.core ? '' : ` · ${year}º ano`}</small><h2>${esc(u.title)}</h2>
+        <p>${u.nodes.filter((n) => E.stars(n.id) >= 1).length}/${u.nodes.length} passos feitos</p></div><div class="big">${u.core ? E.SYM[u.nodes[0].gen.op] : subjGlyph(subj, 40)}</div></div>
+      <div class="path">${pathNodes(year, u.nodes, false)}</div>
+    </section>`).join('');
+}
+
+// Trilha Geral: as outras matérias juntas, com filtro por matéria
+function renderGeral(year, crs) {
+  const others = crs.subjects.filter((sb) => C.isGeral(sb.id));
+  const filter = ui.subj === 'geral' ? null : others.find((sb) => sb.id === ui.subj);
+  const chips = `<div class="subj-chips">
+    <button class="subj-chip c-green ${!filter ? 'on' : ''}" data-a="subj" data-v="geral">${icon('layers', 20)}<span>Todas</span></button>
+    ${others.map((sb) => `<button class="subj-chip c-${sb.color} ${filter?.id === sb.id ? 'on' : ''}" data-a="subj" data-v="${sb.id}">${subjGlyph(sb, 20)}<span>${sb.name}</span></button>`).join('')}
+  </div>`;
+  const done = crs.geral.filter((n) => E.stars(n.id) >= 1).length;
+  const fp = filter ? C.subjectProgress(year, filter.id) : null;
+  const head = `<div class="main-head c-green"><div><small>${year}º ano · trilha geral</small><h1>Geral</h1><p class="muted">${filter ? `${filter.full}: ${fp.done}/${fp.total} passos` : `Ciências, História, Geografia, Arte e mais · ${done}/${crs.geral.length} passos`}</p></div></div>`;
+  if (filter) {
+    return `${head}${chips}${unitsHtml(year, filter)}
+      ${filter.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
+  }
+  return `${head}${chips}
+    <div class="unit-banner c-green"><div><small>${year}º ano · todas as matérias da trilha geral</small><h2>Um passo de cada matéria</h2><p>${done}/${crs.geral.length} passos feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
+    <div class="path">${pathNodes(year, crs.geral, true)}</div>`;
 }
 
 function pathNodes(year, nodes, showSubj) {
@@ -204,8 +211,8 @@ function renderStudy(n) {
 // ---------- Aba Tabuada (livrinho com as 9 tabuadas) ----------
 function renderTable() {
   const op = ui.tableOp;
-  return `<button class="back-link" data-a="go-subj" data-v="ma">${icon('left', 20)} Matemática</button>
-  <h1 class="page-title">Tabuadas</h1>
+  return `<div class="main-head c-green"><div><small>${YEAR()}º ano · trilha principal</small><h1>Matemática</h1><p class="muted">Veja, ouça e aprenda as tabuadas</p></div></div>
+  ${mathTabs('table')}
   <div class="op-tabs">${OPS.map((o) => `<button class="op-tab c-${OP_COLOR[o]} ${o === op ? 'on' : ''}" data-a="table-op" data-v="${o}"><b>${OP_SHORT[o]}</b><span>${OP_TAB[o]}</span></button>`).join('')}</div>
   <div class="book c-${OP_COLOR[op]}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button class="tcard" data-a="table-open" data-v="${n}">
     <h3>Tabuada do ${n}</h3>
@@ -1142,7 +1149,7 @@ document.addEventListener('click', (ev) => {
     case 'check-mark': checkMark(Number(v)); break;
     case 'go-subj': ui.tab = 'learn'; ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
     case 'subj': ui.subj = v; ui.tab = 'learn'; ui.pop = null; closeModal(); sfx.tap(); render(); scrollTo(0, 0); break;
-    case 'pick-subj': ui.tab = 'others'; render(); break;
+    case 'pick-subj': ui.tab = 'learn'; ui.subj = 'geral'; render(); break;
     case 'study-close': closeOverlay(); break;
     case 'table-op': ui.tableOp = v; sfx.tap(); render(); break;
     case 'table-open': openTable(Number(v)); break;

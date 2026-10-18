@@ -95,7 +95,7 @@ p { margin: 0; }
   font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .4px;
 }
 .nav button.on { border-color: var(--blue-b); background: var(--blue-l); color: var(--blue-d); }
-.nav { grid-template-columns: repeat(5, 1fr); }
+.nav { grid-template-columns: repeat(6, 1fr); }
 .nav-subjects { display: none; }
 
 .topbar {
@@ -684,11 +684,25 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 }
 
 /* ---------- Matemática como matéria principal ---------- */
-.math-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
-.math-head > div > small { display: block; color: var(--green-t); font-size: 13px; text-transform: uppercase; letter-spacing: .6px; font-weight: 900; }
-.math-head h1 { font-size: 30px; color: var(--green-t); }
-.math-head .tool-card { margin-bottom: 10px; }
+.main-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
+.main-head > div > small { display: block; color: var(--d); font-size: 13px; text-transform: uppercase; letter-spacing: .6px; font-weight: 900; }
+.main-head h1 { font-size: 30px; color: var(--d); }
+.main-head .tool-card { margin-bottom: 10px; }
 @media (min-width: 700px) {
-  .math-head { flex-direction: row; align-items: center; justify-content: space-between; }
-  .math-head .tool-card { width: auto; max-width: 340px; margin: 0; }
+  .main-head { flex-direction: row; align-items: center; justify-content: space-between; }
+  .main-head .tool-card { width: auto; max-width: 340px; margin: 0; }
 }
+
+/* ---------- Menu: 3 trilhas (Matemática, Português, Geral) ---------- */
+.nav-glyph { text-transform: none; display: grid; place-items: center; height: 26px; font-size: 17px; font-weight: 900; letter-spacing: -.5px; }
+@media (max-width: 699px) {
+  .nav { padding-left: 2px; padding-right: 2px; }
+  .nav button { font-size: 10px; text-transform: none; letter-spacing: 0; }
+}
+.main-head + .subj-chips { margin-top: 4px; }
+
+/* ---------- Abas da Matemática ---------- */
+.math-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg2); border: 2px solid var(--line); border-radius: 16px; padding: 5px; margin: 4px 0 20px; }
+.math-tabs button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 12px; font-size: 16px; color: var(--muted); }
+.math-tabs button.on { background: var(--c); color: #fff; box-shadow: 0 3px 0 var(--d); }
+@media (min-width: 700px) { .math-tabs { max-width: 420px; } }

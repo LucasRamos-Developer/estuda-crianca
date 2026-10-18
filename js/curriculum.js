@@ -14,16 +14,11 @@ export const SUBJECTS = [
   { id: 'er', comp: 'ER', name: 'Ens. Religioso', full: 'Ensino Religioso', color: 'gray', icon: 'sun' },
 ];
 export const subjectById = (id) => SUBJECTS.find((s) => s.id === id);
+// Trilhas principais: Matemática e Português. As demais formam a trilha Geral.
+export const MAIN = ['ma', 'lp'];
+export const isGeral = (id) => !MAIN.includes(id);
 
 const AUTHORED = { 3: ano3 };
-
-// Treino de contas (gerado) para os anos iniciais sem conteúdo escrito
-const MATH_DRILLS = {
-  1: ['add-1', 'add-2', 'add-3', 'add-4', 'add-5'],
-  2: ['add-6', 'add-7', 'add-8', 'add-9', 'subt-1', 'subt-2', 'subt-3', 'subt-4', 'subt-5'],
-  4: ['mul-6', 'mul-7', 'mul-8', 'mul-9', 'div-6', 'div-7', 'div-8', 'div-9', 'sub-8'],
-  5: ['mul-rev', 'div-rev', 'sub-9'],
-};
 
 // ---------- BNCC ----------
 let BNCC = [];
@@ -51,12 +46,17 @@ export function course(year) {
   const subjects = [];
   for (const subj of SUBJECTS) {
     let units = [];
+    if (subj.id === 'ma') {
+      // O app de matemática completo (tabuadas de +, −, ×, ÷ e contas maiores) vem primeiro
+      units = E.UNITS.map((u) => ({ title: `${u.title}: ${u.subtitle.toLowerCase()}`, core: true, nodes: u.nodes.map((n) => makeNode({ gen: n.id, skills: [] }, subj)) }));
+    }
     if (authored[subj.id]) {
-      units = authored[subj.id].map((u) => ({ title: u.unit, nodes: u.nodes.map((n) => makeNode(n, subj)) }));
+      // Tópicos do ano escritos; na Matemática, sem repetir as tabuadas que já estão no núcleo
+      const yearUnits = authored[subj.id]
+        .map((u) => ({ title: u.unit, nodes: u.nodes.filter((n) => !(subj.id === 'ma' && n.gen)).map((n) => makeNode(n, subj)) }))
+        .filter((u) => u.nodes.length);
+      units.push(...yearUnits);
     } else {
-      if (subj.id === 'ma' && MATH_DRILLS[year]) {
-        units.push({ title: 'Treino de contas', nodes: MATH_DRILLS[year].map((g) => makeNode({ gen: g, skills: [] }, subj)) });
-      }
       const skills = skillsFor(subj.comp, year);
       const groups = [];
       for (let i = 0; i < skills.length; i += 3) groups.push(skills.slice(i, i + 3));
@@ -69,11 +69,11 @@ export function course(year) {
     units.forEach((u, ui) => u.nodes.forEach((n, ni) => { n.unitIdx = ui; n.idx = ni; }));
     subjects.push({ ...subj, units, nodes: units.flatMap((u) => u.nodes), authored: !!authored[subj.id] });
   }
-  // Trilha completa: alterna as matérias, um passo de cada vez
-  const all = [];
-  const queues = subjects.map((s) => s.nodes.slice());
-  while (queues.some((q) => q.length)) for (const q of queues) if (q.length) all.push(q.shift());
-  cache[year] = { year, subjects, all };
+  // Trilha Geral: alterna as outras matérias, um passo de cada vez
+  const geral = [];
+  const queues = subjects.filter((s) => isGeral(s.id)).map((s) => s.nodes.slice());
+  while (queues.some((q) => q.length)) for (const q of queues) if (q.length) geral.push(q.shift());
+  cache[year] = { year, subjects, geral };
   return cache[year];
 }
 
