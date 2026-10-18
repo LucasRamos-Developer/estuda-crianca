@@ -646,3 +646,22 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
   .report-doc { padding: 0; }
   .report-doc .table tr { break-inside: avoid; }
 }
+
+/* ---------- Escolha da matéria ---------- */
+.subj-current { display: flex; align-items: center; gap: 12px; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 16px; padding: 10px 12px; margin-bottom: 18px; }
+.subj-current small { display: block; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+.subj-current b { display: block; font-size: 18px; }
+.subj-current .btn { flex: none; }
+.subj-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.subj-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 16px; text-align: center; background: #fff; }
+.subj-tile b { font-size: 15px; color: var(--text); }
+.subj-tile small { font-size: 12px; color: var(--muted); }
+.subj-tile .sic { width: 48px; height: 48px; border-radius: 14px; }
+.subj-tile.on { border-color: var(--c); background: var(--l); }
+.subj-tile:active { transform: translateY(2px); border-bottom-width: 2px; }
+.tool-card { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; border: 2px solid var(--line); border-bottom-width: 4px; text-align: left; color: var(--c); margin-bottom: 18px; background: #fff; }
+.tool-card b { display: block; color: var(--text); font-size: 16px; }
+.tool-card small { display: block; color: var(--muted); font-size: 13px; }
+.back-link { display: inline-flex; align-items: center; gap: 4px; color: var(--blue-d); font-size: 15px; padding: 4px 0; margin-bottom: 4px; }
+@media (min-width: 700px) { .subj-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 380px) { .subj-current .btn { padding: 8px 10px; font-size: 12px; } }

@@ -59,8 +59,8 @@ function topbar() {
 }
 
 function nav() {
-  const items = [['learn', 'home', 'Trilha'], ['table', 'book', 'Tabuada'], ['challenges', 'bolt', 'Desafios'], ['progress', 'chart', 'Progresso'], ['parents', 'lock', 'Pais']];
-  return `<nav class="nav"><div class="brand">Aprender Bia</div>${items.map(([id, ic, label]) => `<button class="${ui.tab === id ? 'on' : ''}" data-a="tab" data-v="${id}">${icon(ic, 26)}<span>${label}</span></button>`).join('')}</nav>`;
+  const items = [['learn', 'home', 'Trilha'], ['challenges', 'bolt', 'Desafios'], ['progress', 'chart', 'Progresso'], ['parents', 'lock', 'Pais']];
+  return `<nav class="nav"><div class="brand">Estuda Criança</div>${items.map(([id, ic, label]) => `<button class="${ui.tab === id || (id === 'learn' && ui.tab === 'table') ? 'on' : ''}" data-a="tab" data-v="${id}">${icon(ic, 26)}<span>${label}</span></button>`).join('')}</nav>`;
 }
 
 const TABS = { learn: renderLearn, table: renderTable, challenges: renderChallenges, progress: renderProgress, parents: renderParents };
@@ -72,24 +72,42 @@ function renderLearn() {
   const year = YEAR();
   const crs = C.course(year);
   if (!crs.subjects.some((s) => s.id === ui.subj)) ui.subj = 'all';
-  const chips = `<div class="subj-chips">
-    <button class="subj-chip c-green ${ui.subj === 'all' ? 'on' : ''}" data-a="subj" data-v="all">${icon('layers', 22)}<span>Tudo</span></button>
-    ${crs.subjects.map((s) => `<button class="subj-chip c-${s.color} ${ui.subj === s.id ? 'on' : ''}" data-a="subj" data-v="${s.id}">${subjGlyph(s, 22)}<span>${s.name}</span></button>`).join('')}
+  const cur = ui.subj === 'all' ? null : crs.subjects.find((s) => s.id === ui.subj);
+  const picker = `<div class="subj-current">
+    <span class="sic c-${cur ? cur.color : 'green'}">${cur ? subjGlyph(cur, 24) : icon('layers', 24)}</span>
+    <div class="grow"><small>Estudando agora · ${year}º ano</small><b>${cur ? cur.full : 'Trilha padrão'}</b></div>
+    <button class="btn white sm" data-a="pick-subj">Escolher matéria</button>
   </div>`;
-  if (ui.subj === 'all') {
+  if (!cur) {
     const done = crs.all.filter((n) => E.stars(n.id) >= 1).length;
-    return `${chips}
-      <div class="unit-banner c-green"><div><small>${year}º ano · Trilha completa</small><h2>Aprender de tudo</h2><p>Um passo de cada matéria, em sequência · ${done}/${crs.all.length} feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
+    return `${picker}
+      <div class="unit-banner c-green"><div><small>${year}º ano · Trilha padrão</small><h2>Um pouco de cada matéria</h2><p>Um passo de cada matéria, em sequência · ${done}/${crs.all.length} feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
       <div class="path">${pathNodes(year, crs.all, true)}</div>`;
   }
-  const subj = crs.subjects.find((s) => s.id === ui.subj);
-  const prog = C.subjectProgress(year, subj.id);
-  return `${chips}${subj.units.map((u, i) => `<section class="unit">
-      <div class="unit-banner c-${subj.color}"><div><small>${subj.full} · ${year}º ano · Unidade ${i + 1}</small><h2>${esc(u.title)}</h2>
-        <p>${i === 0 ? `${prog.done}/${prog.total} passos feitos` : `${u.nodes.length} passos`}</p></div><div class="big">${subjGlyph(subj, 40)}</div></div>
+  const prog = C.subjectProgress(year, cur.id);
+  const tools = cur.id === 'ma' ? `<button class="tool-card c-green" data-a="tab" data-v="table">${icon('book', 26)}<div class="grow"><b>Tabuadas</b><small>Ver, ouvir e aprender as tabuadas de somar, tirar, multiplicar e dividir</small></div>${icon('right', 22)}</button>` : '';
+  return `${picker}${tools}${cur.units.map((u, i) => `<section class="unit">
+      <div class="unit-banner c-${cur.color}"><div><small>${cur.full} · ${year}º ano · Unidade ${i + 1}</small><h2>${esc(u.title)}</h2>
+        <p>${i === 0 ? `${prog.done}/${prog.total} passos feitos` : `${u.nodes.length} passos`}</p></div><div class="big">${subjGlyph(cur, 40)}</div></div>
       <div class="path">${pathNodes(year, u.nodes, false)}</div>
     </section>`).join('')}
-    ${subj.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
+    ${cur.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
+}
+
+// Grade para escolher a matéria (ou a trilha padrão)
+function pickSubject() {
+  const year = YEAR();
+  const crs = C.course(year);
+  const all = crs.all;
+  const doneAll = all.filter((n) => E.stars(n.id) >= 1).length;
+  const tile = (id, color, glyph, name, sub) => `<button class="subj-tile c-${color} ${ui.subj === id ? 'on' : ''}" data-a="subj" data-v="${id}">
+    <span class="sic">${glyph}</span><b>${name}</b><small>${sub}</small></button>`;
+  showModal(`<h2>O que você quer estudar?</h2><p>${year}º ano</p>
+    <div class="subj-grid">
+      ${tile('all', 'green', icon('layers', 26), 'Trilha padrão', `Todas as matérias · ${doneAll}/${all.length}`)}
+      ${crs.subjects.map((sb) => { const p = C.subjectProgress(year, sb.id); return tile(sb.id, sb.color, subjGlyph(sb, 26), sb.full, `${p.done}/${p.total} passos`); }).join('')}
+    </div>
+    <button class="btn ghost" data-a="modal-close">Fechar</button>`);
 }
 
 function pathNodes(year, nodes, showSubj) {
@@ -171,7 +189,8 @@ function renderStudy(n) {
 // ---------- Aba Tabuada (livrinho com as 9 tabuadas) ----------
 function renderTable() {
   const op = ui.tableOp;
-  return `<h1 class="page-title">Tabuada</h1>
+  return `<button class="back-link" data-a="go-subj" data-v="ma">${icon('left', 20)} Matemática</button>
+  <h1 class="page-title">Tabuadas</h1>
   <div class="op-tabs">${OPS.map((o) => `<button class="op-tab c-${OP_COLOR[o]} ${o === op ? 'on' : ''}" data-a="table-op" data-v="${o}"><b>${OP_SHORT[o]}</b><span>${OP_TAB[o]}</span></button>`).join('')}</div>
   <div class="book c-${OP_COLOR[op]}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button class="tcard" data-a="table-open" data-v="${n}">
     <h3>Tabuada do ${n}</h3>
@@ -369,7 +388,7 @@ function renderChallenges() {
   </div>`;
   return `<h1 class="page-title">Desafios</h1>
   <section class="builder c-${OP_COLOR[op]}">
-    <h2>Desafio da tabuada</h2>
+    <h2>Matemática · desafio de contas</h2>
     <div class="b-step"><span class="b-label">1. Operação</span>
       <div class="op-tabs small">${OPS.map((o) => `<button class="op-tab c-${OP_COLOR[o]} ${o === op ? 'on' : ''}" data-a="ch-op" data-v="${o}"><b>${OP_SHORT[o]}</b><span>${OP_TAB[o]}</span></button>`).join('')}</div></div>
     <div class="b-step"><span class="b-label">2. Qual tabuada?</span>
@@ -378,7 +397,7 @@ function renderChallenges() {
       <div class="modes">${CH_MODES.map(([m, ic, label, desc]) => `<button class="mode ${m === mode ? 'on' : ''}" data-a="ch-mode" data-v="${m}">${icon(ic, 24)}<b>${label}</b><small>${desc}</small></button>`).join('')}</div></div>
     <div class="b-go"><span class="rec">${recLabel}</span><button class="btn" data-a="ch" data-v="table">Começar · ${n === 'all' ? 'todas as tabuadas' : `tabuada do ${n}`} de ${OP_VERB[op]}</button></div>
   </section>
-  <h2 class="section-title">Outros desafios</h2>
+  <h2 class="section-title">Desafios de todas as matérias</h2>
   <div class="cards">
     ${card('daily', 'calendar', 'orange', 'Desafio do dia', '10 contas misturadas. Ganhe +20 XP.', dailyDone != null ? `Feito hoje: ${dailyDone}/10` : 'Novo desafio disponível', dailyDone != null ? 'Volte amanhã' : 'Jogar', dailyDone != null)}
     ${card('test', 'clipboard', 'purple', 'Teste de progresso', '2 contas de cada tabuada, sem ajuda. No final sai um boletim.', (() => { const t = s.tests.find((x) => x.op === ui.testOp); return t ? `Último: ${t.score}/${t.total}` : 'Ainda não fez'; })(), `Testar ${OP_NAME[ui.testOp].toLowerCase()}`, false,
@@ -671,7 +690,7 @@ function reportText() {
   const weak = E.weakFacts(6).map((w) => w.label);
   const tests = OPS.map((o) => s.tests.find((x) => x.op === o)).filter(Boolean);
   return [
-    `Relatório de ${s.profile.name} - Tabuada`,
+    `Relatório de ${s.profile.name} - Estuda Criança (${YEAR()}º ano)`,
     `Data: ${new Date().toLocaleDateString('pt-BR')}`,
     '',
     `Sequência: ${E.streak()} dia(s) seguidos (recorde ${s.best.streak})`,
@@ -1029,8 +1048,8 @@ function renderOnboarding() {
   $app.innerHTML = '';
   $ov.innerHTML = `<div class="screen"><div class="inner">
     <div class="onb">
-      <div class="logo">${['+', '−', '×', '÷'].map((o, i) => `<span class="c-${['purple', 'orange', 'green', 'blue'][i]}">${o}</span>`).join('')}</div>
-      <h1>Aprender Bia</h1>
+      <div class="logo">${[['blue', 'book'], ['green', 'pencil'], ['teal', 'flask'], ['purple', 'globe']].map(([c, ic]) => `<span class="c-${c}">${icon(ic, 30)}</span>`).join('')}</div>
+      <h1>Estuda Criança</h1>
       <p class="muted big-p">Estudos do ensino fundamental, com o que se aprende nas escolas de Joinville.</p>
       <label class="field"><span>Qual é o seu nome?</span>
         <input class="text-input" id="onbName" maxlength="20" placeholder="Seu nome" value="${esc(ui.onbName)}" autocomplete="off"></label>
@@ -1076,7 +1095,7 @@ function exportBackup() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `tabuada-backup-${(S().profile.name || 'crianca').toLowerCase().replace(/[^a-z0-9]+/gi, '-')}-${E.dayKey()}.json`;
+  a.download = `estuda-crianca-backup-${(S().profile.name || 'crianca').toLowerCase().replace(/[^a-z0-9]+/gi, '-')}-${E.dayKey()}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -1107,7 +1126,8 @@ document.addEventListener('click', (ev) => {
     case 'study-walk': { const n = studyNode; startWalk(n.gen.op, n.gen.n, () => lessonGo(n.id)); break; }
     case 'check-mark': checkMark(Number(v)); break;
     case 'go-subj': ui.tab = 'learn'; ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
-    case 'subj': ui.subj = v; ui.pop = null; sfx.tap(); render(); scrollTo(0, 0); break;
+    case 'subj': ui.subj = v; ui.pop = null; closeModal(); sfx.tap(); render(); scrollTo(0, 0); break;
+    case 'pick-subj': pickSubject(); break;
     case 'study-close': closeOverlay(); break;
     case 'table-op': ui.tableOp = v; sfx.tap(); render(); break;
     case 'table-open': openTable(Number(v)); break;
@@ -1161,7 +1181,7 @@ document.addEventListener('click', (ev) => {
     case 'goal': S().settings.goal = Number(v); E.save(); render(); break;
     case 'toggle': S().settings[v] = !S().settings[v]; E.save(); render(); break;
     case 'share': shareReport(); break;
-    case 'share-native': navigator.share({ title: 'Relatório da Tabuada', text: reportText() }).catch(() => {}); break;
+    case 'share-native': navigator.share({ title: 'Relatório - Estuda Criança', text: reportText() }).catch(() => {}); break;
     case 'share-copy': navigator.clipboard?.writeText(reportText()).then(() => toast('Relatório copiado'), () => toast('Não foi possível copiar')); break;
     case 'export': exportBackup(); break;
     case 'import': document.getElementById('importFile').click(); break;

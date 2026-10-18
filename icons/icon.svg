@@ -1,14 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#ffffff"/>
-  <g font-family="Nunito, Arial Rounded MT Bold, Arial, sans-serif" font-weight="900" font-size="150" fill="#fff" text-anchor="middle">
-    <rect x="56" y="56" width="188" height="188" rx="40" fill="#ce82ff"/>
-    <rect x="268" y="56" width="188" height="188" rx="40" fill="#ff9600"/>
-    <rect x="56" y="268" width="188" height="188" rx="40" fill="#58cc02"/>
-    <rect x="268" y="268" width="188" height="188" rx="40" fill="#1cb0f6"/>
-    <path d="M150 100v100M100 150h100" stroke="#fff" stroke-width="30" stroke-linecap="round"/>
-    <path d="M312 150h100" stroke="#fff" stroke-width="30" stroke-linecap="round"/>
-    <path d="M115 327l70 70M185 327l-70 70" stroke="#fff" stroke-width="30" stroke-linecap="round"/>
-    <path d="M312 362h100" stroke="#fff" stroke-width="30" stroke-linecap="round"/>
-    <circle cx="362" cy="318" r="17"/><circle cx="362" cy="406" r="17"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#ffffff"/><rect x="56" y="56" width="188" height="188" rx="40" fill="#1cb0f6"/><g transform="translate(90 90) scale(5)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-2-1.5-5-2-8-2v15c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2zM12 6v15"/></g><rect x="268" y="56" width="188" height="188" rx="40" fill="#58cc02"/><g transform="translate(302 90) scale(5)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></g><rect x="56" y="268" width="188" height="188" rx="40" fill="#00b5a5"/><g transform="translate(90 302) scale(5)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/></g><rect x="268" y="268" width="188" height="188" rx="40" fill="#ce82ff"/><g transform="translate(302 302) scale(5)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></g></svg>
