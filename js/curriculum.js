@@ -35,6 +35,33 @@ export async function loadContent(year) {
   return AUTHORED[year];
 }
 
+// Jogos e simulados por ano (data/jogos/anoN.json, data/simulados/anoN.json)
+const GAMES = {};
+const SIMS = {};
+export async function loadGames(year) {
+  if (!(year in GAMES)) {
+    try { GAMES[year] = (await getJson(`./data/jogos/ano${year}.json`)).jogos || null; } catch { GAMES[year] = null; }
+  }
+  return GAMES[year];
+}
+export const games = (year) => GAMES[year] || {};
+export async function loadSimulados(year) {
+  if (!(year in SIMS)) {
+    try { SIMS[year] = (await getJson(`./data/simulados/ano${year}.json`)).simulados || []; } catch { SIMS[year] = []; }
+  }
+  return SIMS[year];
+}
+export const simulados = (year) => SIMS[year] || [];
+export const loadYear = (year) => Promise.all([loadContent(year), loadGames(year), loadSimulados(year)]);
+
+// Mapa-múndi do jogo "Onde fica?" (só carrega quando o jogo abre)
+let MAP = null;
+export async function loadMap() {
+  if (!MAP) { try { MAP = await getJson('./data/mapas/mundo.json'); } catch { MAP = null; } }
+  return MAP;
+}
+export const worldMap = () => MAP;
+
 // Curiosidades (data/curiosidades.json)
 let CURIOS = { fontes: [] };
 export async function loadCurios() {
@@ -69,7 +96,7 @@ export function course(year) {
     let units = [];
     if (subj.id === 'ma') {
       // O app de matemática completo (tabuadas de +, −, ×, ÷ e contas maiores) vem primeiro
-      units = E.UNITS.map((u) => ({ title: `${u.title}: ${u.subtitle.toLowerCase()}`, core: true, nodes: u.nodes.map((n) => makeNode({ gen: n.id, skills: [] }, subj)) }));
+      units = E.UNITS.map((u) => ({ title: u.table ? `${u.title} · tabuadas do 1 ao 9` : u.title, core: true, nodes: u.nodes.map((n) => makeNode({ gen: n.id, skills: [] }, subj)) }));
     }
     if (authored[subj.id]) {
       // Tópicos do ano escritos; na Matemática, sem repetir as tabuadas que já estão no núcleo
@@ -140,6 +167,20 @@ function makeQuestion(node, text, opts, why) {
     text, passage: node.passage, options: isVF ? ['Verdadeiro', 'Falso'] : shuffle(opts), answer,
     solution: why ? `${answer}. ${why}` : answer, skill: node.skills?.[0] || null, nodeId: node.id,
   };
+}
+
+// Simulado: questões na ordem das matérias, cada uma marcada com a matéria (para o boletim)
+export function simuladoQuestions(sim) {
+  const out = [];
+  for (const subj of SUBJECTS) {
+    for (const [text, opts, why, skill] of sim.questoes[subj.id] || []) {
+      out.push({
+        kind: 'story', mode: 'choice', title: subj.full, text, options: shuffle(opts), answer: opts[0],
+        solution: why ? `${opts[0]}. ${why}` : opts[0], skill: skill || null, group: subj.id,
+      });
+    }
+  }
+  return out;
 }
 
 // Revisão surpresa: perguntas de tudo o que já foi estudado no ano

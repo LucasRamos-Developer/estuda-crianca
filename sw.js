@@ -3,7 +3,7 @@
 //   Ao mudar algum deles, aumente a versão abaixo.
 // - Conteúdo em data/*.json: rede primeiro (pega a versão nova quando tem internet)
 //   e cópia salva quando está offline. Atualizar JSON NÃO exige mudar a versão.
-const CACHE = 'estuda-v8';
+const CACHE = 'estuda-v10';
 const DATA_CACHE = 'estuda-dados';
 const ASSETS = [
   './',
@@ -13,6 +13,7 @@ const ASSETS = [
   './js/app.js',
   './js/engine.js',
   './js/curriculum.js',
+  './js/games.js',
   './js/fx.js',
   './js/icons.js',
   './fonts/nunito.woff2',
@@ -26,6 +27,21 @@ const DATA = [
   './data/bncc.json',
   './data/curiosidades.json',
   './data/conteudo/ano3.json',
+  './data/jogos/ano3.json',
+  './data/simulados/ano3.json',
+  './data/mapas/mundo.json',
+  './data/arte/almeida-junior-caipira.jpg',
+  './data/arte/da-vinci-mona-lisa.jpg',
+  './data/arte/hokusai-grande-onda.jpg',
+  './data/arte/klimt-beijo.jpg',
+  './data/arte/meirelles-primeira-missa.jpg',
+  './data/arte/monet-impressao.jpg',
+  './data/arte/monet-ninfeias.jpg',
+  './data/arte/pedro-americo-independencia.jpg',
+  './data/arte/seurat-tarde-domingo.jpg',
+  './data/arte/van-gogh-girassois.jpg',
+  './data/arte/van-gogh-noite-estrelada.jpg',
+  './data/arte/vermeer-moca-brinco-perola.jpg',
 ];
 
 self.addEventListener('install', (event) => {

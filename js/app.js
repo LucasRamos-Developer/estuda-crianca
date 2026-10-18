@@ -1,6 +1,7 @@
 import * as E from './engine.js';
 import { icon } from './icons.js';
 import * as C from './curriculum.js';
+import * as G from './games.js';
 import { sfx, setSound, confetti, vibrate } from './fx.js';
 
 const $app = document.getElementById('app');
@@ -16,8 +17,8 @@ const OP_SHORT = { add: '+', sub: '−', mul: '×', div: '÷', mix: '±' };
 const OP_UNIT = { add: 'add', sub: 'subt', mul: 'mul', div: 'div' };
 const OP_COLOR = { add: 'purple', sub: 'orange', mul: 'green', div: 'blue', mix: 'red' };
 const LEVEL_NAMES = ['Aprender', 'Fixação', 'Domínio'];
-const OP_TAB = { add: 'Somar', sub: 'Tirar', mul: 'Vezes', div: 'Dividir' };
-const OP_VERB = { add: 'somar', sub: 'tirar', mul: 'vezes', div: 'dividir' };
+const OP_TAB = { add: 'Adição', sub: 'Subtração', mul: 'Multiplicação', div: 'Divisão' };
+const OP_VERB = { add: 'adição', sub: 'subtração', mul: 'multiplicação', div: 'divisão' };
 const CH_MODES = [['quiz', 'clipboard', 'Perguntas', 'Responda a tabuada toda'], ['time', 'clock', '1 minuto', 'Quantas você acerta?'], ['survival', 'heart', '3 vidas', 'Até errar 3 vezes']];
 const WEEKDAY = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const CAN_SPEAK = 'speechSynthesis' in window;
@@ -92,7 +93,7 @@ function renderLearn() {
   const cur = crs.subjects.find((s) => s.id === ui.subj);
   const prog = C.subjectProgress(year, cur.id);
   const head = `<div class="main-head c-${cur.color}"><div><small>${year}º ano · trilha principal</small><h1>${cur.full}</h1><p class="muted">${prog.done}/${prog.total} passos feitos</p></div></div>${cur.id === 'ma' ? mathTabs('trail') : ''}`;
-  return `${head}${curioCard([cur.id], cur.id)}${unitsHtml(year, cur)}
+  return `${head}${gameStrip([cur.id])}${curioCard([cur.id], cur.id)}${unitsHtml(year, cur)}
     ${cur.authored || cur.id === 'ma' ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
 }
 
@@ -134,6 +135,52 @@ function renderCurios() {
   <div class="btn-col">${(C.curios().fontes || []).map((src) => `<a class="btn white" href="${src.url}" target="_blank" rel="noopener">${esc(src.name)}</a>`).join('')}</div>`;
 }
 
+// ---------- Jogos por matéria ----------
+const gameOf = (id) => C.games(YEAR())[id];
+const gameRec = (id) => S().games[`y${YEAR()}-${id}`];
+function gameStrip(ids) {
+  const list = ids.filter((id) => gameOf(id));
+  if (!list.length) return '';
+  return `<div class="game-strip ${list.length > 2 ? 'many' : ''}">${list.map((id) => {
+    const g = gameOf(id);
+    const sb = C.subjectById(id);
+    const r = gameRec(id);
+    return `<button class="game-chip c-${sb.color}" data-a="game" data-v="${id}"><span class="sic">${icon(G.GAME_ICON[g.tipo] || 'game', 22)}</span>
+      <span class="grow"><b>${esc(g.titulo)}</b><small>${list.length > 1 ? sb.name : `Jogo de ${sb.full}`}${r ? ` · melhor ${pct(r.best)}` : ''}</small></span>${icon('right', 20)}</button>`;
+  }).join('')}</div>`;
+}
+
+// Escolha do nível antes de jogar
+function openGame(id) {
+  const g = gameOf(id);
+  if (!g) return;
+  const lv = G.levels(g);
+  if (!lv.length) { startGame(id, -1); return; }
+  const sb = C.subjectById(id);
+  sfx.tap();
+  showModal(`<div class="big-badge sm c-${sb.color}">${icon(G.GAME_ICON[g.tipo] || 'game', 36)}</div>
+    <h2>${esc(g.titulo)}</h2><p class="muted">${esc(g.desc || '')}</p>
+    <div class="btn-col">${lv.map((name, i) => `<button class="btn white" data-a="game-go" data-v="${id}|${i}">${esc(name)}</button>`).join('')}
+      <button class="btn" data-a="game-go" data-v="${id}|-1">${icon('shuffle', 20)} Misturar tudo</button></div>
+    <button class="btn ghost" data-a="modal-close">Fechar</button>`);
+}
+
+async function startGame(id, level) {
+  const g = gameOf(id);
+  if (!g) return;
+  if (g.tipo === 'mapa' && !(await C.loadMap())) { closeModal(); toast('O mapa ainda não foi salvo. Abra o app com internet uma vez.'); return; }
+  const qs = G.build(g, level);
+  if (!qs.length) { toast('Jogo sem perguntas.'); return; }
+  const lv = G.levels(g)[level];
+  startSession({ kind: 'game', subj: id, gameId: `y${YEAR()}-${id}`, title: lv ? `${g.titulo} · ${lv}` : g.titulo, questions: qs, retry: false, help: false });
+}
+
+function startSimulado(simId) {
+  const sim = C.simulados(YEAR()).find((x) => x.id === simId);
+  if (!sim) return;
+  startSession({ kind: 'simulado', simId, title: sim.titulo, questions: C.simuladoQuestions(sim), retry: false, help: false });
+}
+
 // Abas da Matemática: Trilha | Tabuada
 function mathTabs(active) {
   return `<div class="math-tabs c-green">
@@ -162,10 +209,10 @@ function renderGeral(year, crs) {
   const fp = filter ? C.subjectProgress(year, filter.id) : null;
   const head = `<div class="main-head c-green"><div><small>${year}º ano · outras matérias</small><h1>Outros</h1><p class="muted">${filter ? `${filter.full}: ${fp.done}/${fp.total} passos` : `Ciências, História, Geografia, Arte e mais · ${done}/${crs.geral.length} passos`}</p></div></div>`;
   if (filter) {
-    return `${head}${chips}${curioCard([filter.id], filter.id)}${unitsHtml(year, filter)}
+    return `${head}${chips}${gameStrip([filter.id])}${curioCard([filter.id], filter.id)}${unitsHtml(year, filter)}
       ${filter.authored ? '' : '<p class="muted center small">Este ano ainda usa as habilidades da BNCC para estudo. Perguntas novas serão adicionadas aos poucos.</p>'}`;
   }
-  return `${head}${chips}${curioCard(others.map((o) => o.id), 'outros')}
+  return `${head}${chips}${gameStrip(others.map((o) => o.id))}${curioCard(others.map((o) => o.id), 'outros')}
     <div class="unit-banner c-green"><div><small>${year}º ano · todas as outras matérias</small><h2>Um passo de cada matéria</h2><p>${done}/${crs.geral.length} passos feitos</p></div><div class="big">${icon('layers', 44)}</div></div>
     <div class="path">${pathNodes(year, crs.geral, true)}</div>`;
 }
@@ -295,19 +342,21 @@ function stopSpeak() {
   if (CAN_SPEAK) window.speechSynthesis.cancel();
   setSpeaking(false);
 }
-function speak(lines) {
-  if (!CAN_SPEAK || !S().settings.sound) return;
+function speak(lines, lang = 'pt-BR', force = false) {
+  if (!CAN_SPEAK || (!S().settings.sound && !force)) return;
   stopSpeak();
   try {
     const synth = window.speechSynthesis;
-    const voice = synth.getVoices().find((v) => v.lang && v.lang.toLowerCase().startsWith('pt'));
+    const pre = lang.slice(0, 2).toLowerCase();
+    const voice = synth.getVoices().find((v) => v.lang && v.lang.toLowerCase().replace('_', '-') === lang.toLowerCase())
+      || synth.getVoices().find((v) => v.lang && v.lang.toLowerCase().startsWith(pre));
     const list = [].concat(lines);
     speakLeft = list.length;
     setSpeaking(true);
     for (const text of list) {
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'pt-BR';
-      u.rate = 0.9;
+      u.lang = lang;
+      u.rate = pre === 'pt' ? 0.9 : 0.8;
       if (voice) u.voice = voice;
       u.onend = u.onerror = () => { speakLeft = Math.max(0, speakLeft - 1); if (!speakLeft) setSpeaking(false); };
       synth.speak(u);
@@ -457,6 +506,8 @@ function renderChallenges() {
       <div class="modes">${CH_MODES.map(([m, ic, label, desc]) => `<button class="mode ${m === mode ? 'on' : ''}" data-a="ch-mode" data-v="${m}">${icon(ic, 24)}<b>${label}</b><small>${desc}</small></button>`).join('')}</div></div>
     <div class="b-go"><span class="rec">${recLabel}</span><button class="btn" data-a="ch" data-v="table">Começar · ${n === 'all' ? 'todas as tabuadas' : `tabuada do ${n}`} de ${OP_VERB[op]}</button></div>
   </section>
+  ${simuladosHtml()}
+  ${gamesHtml()}
   <h2 class="section-title">Desafios de todas as matérias</h2>
   <div class="cards">
     ${card('daily', 'calendar', 'orange', 'Desafio do dia', '10 contas misturadas. Ganhe +20 XP.', dailyDone != null ? `Feito hoje: ${dailyDone}/10` : 'Novo desafio disponível', dailyDone != null ? 'Volte amanhã' : 'Jogar', dailyDone != null)}
@@ -465,6 +516,35 @@ function renderChallenges() {
     ${card('surprise', 'shuffle', 'green', 'Revisão surpresa', 'Perguntas de todas as matérias que você já estudou na trilha.', seen ? `${seen} ${seen === 1 ? 'lição estudada' : 'lições estudadas'}` : 'Faça uma lição da trilha para liberar', 'Jogar', !seen)}
     ${card('errors', 'target', 'blue', 'Treino dos erros', 'Pratique as contas que você mais erra.', weak ? `${weak} ${weak === 1 ? 'conta' : 'contas'} para treinar` : 'Nenhum erro para treinar', 'Treinar', !weak)}
   </div>`;
+}
+
+function simuladosHtml() {
+  const sims = C.simulados(YEAR());
+  if (!sims.length) return '';
+  return `<h2 class="section-title">Simulados do ${YEAR()}º ano</h2>
+  <p class="muted small section-sub">Uma prova por trimestre, como na escola, e uma final. Sem ajuda. No fim sai o boletim por matéria.</p>
+  <div class="cards sims">${sims.map((x) => {
+    const last = S().simulados.find((r) => r.id === x.id);
+    const n = Object.values(x.questoes).reduce((a, l) => a + l.length, 0);
+    return `<div class="card sim"><div class="card-top"><div class="ic c-purple">${icon('clipboard', 28)}</div><div class="grow"><h3>${esc(x.titulo)}</h3><p>${esc(x.temas || '')}</p></div></div>
+      <div class="rec">${last ? `Última nota: <b>${last.score}/${last.total}</b> · ${new Date(last.ts).toLocaleDateString('pt-BR')}` : `${n} questões · ainda não fez`}</div>
+      <button class="btn purple" data-a="sim" data-v="${x.id}">${last ? 'Fazer de novo' : 'Fazer simulado'}</button></div>`;
+  }).join('')}</div>`;
+}
+
+function gamesHtml() {
+  const crs = C.course(YEAR());
+  const list = crs.subjects.filter((sb) => gameOf(sb.id));
+  if (!list.length) return '';
+  return `<h2 class="section-title">Jogos das matérias</h2>
+  <div class="games-grid">${list.map((sb) => {
+    const g = gameOf(sb.id);
+    const r = gameRec(sb.id);
+    return `<button class="game-card-btn c-${sb.color}" data-a="game" data-v="${sb.id}">
+      <span class="sic">${icon(G.GAME_ICON[g.tipo] || 'game', 26)}</span>
+      <small>${sb.full}</small><b>${esc(g.titulo)}</b><span class="desc">${esc(g.desc || '')}</span>
+      <span class="rec">${r ? `Jogou ${r.plays}x · melhor ${pct(r.best)}` : 'Ainda não jogou'}</span></button>`;
+  }).join('')}</div>`;
 }
 
 function startTableChallenge(op, n, mode) {
@@ -651,6 +731,16 @@ function parentReport() {
   ${skillsHtml(YEAR())}
   <div class="two-col">
     <div>
+      <h2 class="section-title">Simulados</h2>
+      <div class="box">${simTable(12)}</div>
+    </div>
+    <div>
+      <h2 class="section-title">Jogos das matérias</h2>
+      <div class="box">${gamesTable()}</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div>
       <h2 class="section-title">Matemática por operação</h2>
       <div class="box"><table class="table">
         <tr><th>Operação</th><th class="r">Contas</th><th class="r">Acerto</th><th class="r">Tempo</th><th class="r">Estrelas</th></tr>
@@ -712,6 +802,25 @@ function parentReport() {
   <input type="file" id="importFile" accept="application/json,.json" hidden>`;
 }
 
+// Tabelas de simulados e jogos (Área dos pais e PDF)
+const SUBJ_SHORT = { ma: 'Mat', lp: 'Port', ci: 'Ciên', hi: 'Hist', ge: 'Geo', ar: 'Arte', ef: 'EF', li: 'Ing', er: 'ER' };
+function simTable(limit) {
+  const list = S().simulados.slice(0, limit);
+  if (!list.length) return '<p class="muted">Nenhum simulado feito ainda. Fica em Desafios, Simulados.</p>';
+  return `<table class="table"><tr><th>Quando</th><th>Simulado</th><th class="r">Nota</th><th>Por matéria</th></tr>
+    ${list.map((x) => `<tr><td>${fmtDate(x.ts)}</td><td>${esc(x.title)}</td><td class="r"><b>${x.score}/${x.total}</b></td>
+      <td><span class="sim-per">${Object.entries(x.per || {}).map(([g, [c, t]]) => `<i class="${c / t >= 0.8 ? 'g' : c / t >= 0.5 ? 'y' : 'r'}" title="${esc(C.subjectById(g)?.full || g)}">${SUBJ_SHORT[g] || g} ${c}/${t}</i>`).join('')}</span></td></tr>`).join('')}</table>`;
+}
+function gamesTable() {
+  const year = YEAR();
+  const rows = C.course(year).subjects.filter((sb) => gameOf(sb.id)).map((sb) => {
+    const g = gameOf(sb.id);
+    const r = gameRec(sb.id);
+    return `<tr><td>${sb.full}</td><td>${esc(g.titulo)}</td><td class="r">${r ? r.plays : 0}</td><td class="r">${r ? pct(r.best) : '—'}</td></tr>`;
+  });
+  return rows.length ? `<table class="table"><tr><th>Matéria</th><th>Jogo</th><th class="r">Partidas</th><th class="r">Melhor</th></tr>${rows.join('')}</table>` : '<p class="muted">Este ano ainda não tem jogos.</p>';
+}
+
 const SKILL_LABEL = ['Não iniciada', 'Estudando', 'Aprendida'];
 function skillsHtml(year) {
   const status = C.skillStatus(year);
@@ -756,6 +865,10 @@ function printReport() {
         <tr><td>XP total</td><td class="r">${s.xp}</td></tr></table>
       <h2>Por matéria</h2>
       <table class="table"><tr><th>Matéria</th><th class="r">Passos</th><th class="r">Estrelas</th><th class="r">Habilidades aprendidas</th></tr>${subjRows}</table>
+      <h2>Simulados</h2>
+      ${simTable(20)}
+      <h2>Jogos das matérias</h2>
+      ${gamesTable()}
       <h2>Contas que mais erra</h2>
       ${E.weakFacts(10).length ? `<table class="table">${E.weakFacts(10).map((w) => `<tr><td>${esc(w.label)}</td><td class="r">${w.w} erro(s) em ${w.c + w.w}</td></tr>`).join('')}</table>` : '<p>Nenhum erro registrado.</p>'}
       <h2>Habilidades da BNCC</h2>
@@ -787,9 +900,10 @@ function reportText() {
     `Estrelas: ${E.totalStars()}/${E.ALL_NODES.length * 3}`,
     '',
     ...OPS.map(op),
-    `Domina ${dominated} de 90 contas da tabuada de vezes`,
+    `Domina ${dominated} de 90 contas da tabuada de multiplicação`,
     ...tests.map((x) => `Último teste de ${OP_NAME[x.op].toLowerCase()}: ${x.score}/${x.total} (${new Date(x.ts).toLocaleDateString('pt-BR')})`),
     weak.length ? `Precisa treinar: ${weak.join('; ')}` : 'Nenhum erro registrado',
+    ...(s.simulados[0] ? [`Último simulado: ${s.simulados[0].title}, ${s.simulados[0].score}/${s.simulados[0].total} (${new Date(s.simulados[0].ts).toLocaleDateString('pt-BR')})`] : []),
   ].join('\n');
 }
 
@@ -874,7 +988,9 @@ function nextQuestion() {
   s.sel = null;
   s.input = '';
   s.qStart = Date.now();
+  if (s.q.game) G.prepare(s);
   renderSession();
+  if (s.q.say) speak(s.q.say.text, s.q.say.lang);
 }
 
 function tickTimer() {
@@ -913,7 +1029,7 @@ function renderSession() {
     </div>
     <div class="lesson-body">
       ${badges ? `<div class="badges">${badges}</div>` : ''}
-      <div class="q-row"><h2 class="q-title">${q.title}</h2>${s.help && q.op && s.phase === 'ask' ? `<button class="help-btn" data-a="help">${icon('bulb', 20)} Ajuda</button>` : ''}</div>
+      <div class="q-row"><h2 class="q-title">${esc(q.title)}</h2>${s.help && q.op && s.phase === 'ask' ? `<button class="help-btn" data-a="help">${icon('bulb', 20)} Ajuda</button>` : ''}</div>
       ${questionCard(q)}
       ${answerArea(q)}
     </div>
@@ -922,6 +1038,7 @@ function renderSession() {
 }
 
 function questionCard(q) {
+  if (q.game) return G.card(q, session);
   const textual = q.kind === 'story' || q.kind === 'visual';
   const content = textual ? `<p class="story">${esc(q.text)}</p>`
     : `<div class="expr-big">${esc(q.text).replace('?', '<span class="qm">?</span>')}</div>`;
@@ -931,6 +1048,7 @@ function questionCard(q) {
 function answerArea(q) {
   const s = session;
   const fb = s.phase === 'feedback';
+  if (q.game) { const html = G.answer(q, s); if (html != null) return html; }
   if (q.mode === 'keypad') {
     const cls = fb ? (s.lastOk ? 'right' : 'wrong') : s.input ? '' : 'empty';
     return `<div class="answer-zone"><div class="answer-box ${cls}">${s.input || '?'}</div>${fb ? '' : keypadHtml('ans')}</div>`;
@@ -955,11 +1073,13 @@ function sessionFoot() {
       <div class="head"><div class="badge">${icon(ok ? 'check' : 'x', 32)}</div><div>
         <h3>${ok ? s.praise : 'Resposta certa:'}</h3>
         ${ok ? (s.combo >= 3 ? `<p>${s.combo} seguidas!</p>` : '') : `<p><b>${esc(s.q.solution)}</b></p>`}
+        ${s.note ? `<p class="note-line">${esc(s.note)}</p>` : ''}
       </div></div>
       <button class="btn ${ok ? '' : 'red'}" data-a="continue">Continuar</button>
     </div></div>`;
   }
-  const ready = s.q.mode === 'keypad' ? s.input !== '' : s.sel != null;
+  if (s.q.mode === 'pairs') return '';
+  const ready = answerValue() != null;
   return `<div class="lesson-foot"><button class="btn" data-a="check" ${ready ? '' : 'disabled'}>Verificar</button></div>`;
 }
 
@@ -978,6 +1098,7 @@ function showHelp() {
 function answerValue() {
   const s = session;
   const q = s.q;
+  if (q.game) { const gv = G.value(q, s); if (gv !== undefined) return gv; }
   if (q.mode === 'keypad') return s.input === '' ? null : Number(s.input);
   if (s.sel == null) return null;
   return q.mode === 'tf' ? [true, false][s.sel] : q.options[s.sel];
@@ -989,11 +1110,12 @@ function check() {
   const v = answerValue();
   if (v == null) return;
   const q = s.q;
-  const ok = v === q.answer;
+  const ok = q.game ? G.isRight(q, v, s) : v === q.answer;
   const ms = Date.now() - s.qStart;
   s.activeMs += Math.min(ms, 60000);
   if (q.key) E.recordAnswer(q, ok, ms); else E.recordSkill(q.skill, ok);
   s.lastOk = ok;
+  s.note = q.game ? G.feedbackNote(q, v, s) : '';
   s.answered++;
   if (ok) {
     s.combo++; s.score++;
@@ -1056,6 +1178,23 @@ function endSession() {
     extra = `<div class="boletim">${per.map((c, i) => `<div class="b-row"><span>${esc(E.testGroupLabel(s.op, i + 1))}</span><span>${'<i class="mark ok"></i>'.repeat(c)}${'<i class="mark no"></i>'.repeat(2 - c)}</span></div>`).join('')}</div>
       <p class="big-p">${train.length ? `Para treinar: <b>${train.map(([, n]) => `tabuada do ${n}`).join(', ')}</b>` : 'Acertou tudo! Parabéns!'}</p>`;
   }
+  if (s.kind === 'game') {
+    xp = 10 + (perfect ? 5 : 0);
+    headline = perfect ? 'Acertou tudo!' : 'Fim de jogo!';
+    sub = `${s.title}: ${correct} de ${total}`;
+    if (E.saveGame(s.gameId, correct, total)) extra = record;
+  }
+  if (s.kind === 'simulado') {
+    xp = 20;
+    headline = 'Boletim do simulado';
+    sub = `${s.title}: ${correct} de ${total}`;
+    const per = {};
+    for (const q of s.questions) { per[q.group] ||= [0, 0]; per[q.group][1]++; }
+    for (const [g, c] of Object.entries(s.groups || {})) if (per[g]) per[g][0] = c;
+    E.saveSimulado({ id: s.simId, title: s.title, score: correct, total, per });
+    const review = Object.entries(per).filter(([, [c, t]]) => c / t < 0.6).map(([g]) => C.subjectById(g).full);
+    extra = `${simBoletim(per)}<p class="big-p">${review.length ? `Para revisar: <b>${review.join(', ')}</b>` : 'Muito bem em todas as matérias!'}</p>`;
+  }
   if (s.kind === 'quiz') {
     xp = s.n === 'all' ? 15 : 10;
     headline = correct === total ? 'Acertou tudo!' : 'Desafio concluído!';
@@ -1100,6 +1239,12 @@ function endSession() {
     <div class="result-foot"><button class="btn" data-a="result-next">Continuar</button></div>
   </div></div>`;
   session = { ended: true, result: true };
+}
+
+// Boletim por matéria: [acertos, total]
+function simBoletim(per) {
+  return `<div class="boletim">${Object.entries(per).map(([g, [c, t]]) => `<div class="b-row"><span>${esc(C.subjectById(g)?.full || g)}</span>
+    <span>${'<i class="mark ok"></i>'.repeat(c)}${'<i class="mark no"></i>'.repeat(t - c)} <b class="b-n">${c}/${t}</b></span></div>`).join('')}</div>`;
 }
 
 function streakScreen(n) {
@@ -1232,6 +1377,9 @@ document.addEventListener('click', (ev) => {
     case 'walk-again': walk.idx = 0; walk.shown = false; renderWalk(); break;
     case 'walk-apply': walkApply(); break;
     case 'ch': startChallenge(v); break;
+    case 'game': openGame(v); break;
+    case 'game-go': { const [id, lv] = v.split('|'); closeModal(); startGame(id, Number(lv)); break; }
+    case 'sim': startSimulado(v); break;
     case 'ch-op': ui.chOp = v; sfx.tap(); render(); break;
     case 'ch-n': ui.chN = v === 'all' ? 'all' : Number(v); sfx.tap(); render(); break;
     case 'ch-mode': ui.chMode = v; sfx.tap(); render(); break;
@@ -1284,7 +1432,7 @@ document.addEventListener('click', (ev) => {
     case 'fact': factDetail(v); break;
     case 'onb-goal': ui.onbGoal = Number(v); sfx.tap(); renderOnboarding(); break;
     case 'onb-year': ui.onbYear = Number(v); sfx.tap(); renderOnboarding(); break;
-    case 'set-year': S().profile.year = Number(v); E.save(); ui.subj = 'ma'; C.loadContent(Number(v)).then(() => { toast(`Trilhas do ${v}º ano`); render(); }); break;
+    case 'set-year': S().profile.year = Number(v); E.save(); ui.subj = 'ma'; C.loadYear(Number(v)).then(() => { toast(`Trilhas do ${v}º ano`); render(); }); break;
     case 'print-report': printReport(); break;
     case 'do-print': window.print(); break;
     case 'onb-done': {
@@ -1297,10 +1445,15 @@ document.addEventListener('click', (ev) => {
       E.save();
       $ov.innerHTML = '';
       sfx.complete();
-      C.loadContent(st.profile.year).then(render);
+      C.loadYear(st.profile.year).then(render);
       break;
     }
-    default: break;
+    default:
+      if (session && !session.ended && session.q) {
+        const r = G.action(a, v, session);
+        if (r === 'render') { sfx.tap(); renderSession(); } else if (r === 'check') { renderSession(); check(); }
+      }
+      break;
   }
 });
 
@@ -1342,10 +1495,11 @@ document.addEventListener('keydown', (ev) => {
   if (ev.key === 'Escape') { quitSession(); return; }
   if (ev.key === 'Enter') { if (s.phase === 'feedback') { if (!s.instant) nextQuestion(); } else check(); return; }
   if (s.phase !== 'ask') return;
+  if (s.q.game && G.key(ev, s)) { ev.preventDefault(); renderSession(); return; }
   if (s.q.mode === 'keypad') {
     if (/^\d$/.test(ev.key) && s.input.length < 4) { s.input = (s.input + ev.key).replace(/^0+(?=\d)/, ''); renderSession(); }
     if (ev.key === 'Backspace') { s.input = s.input.slice(0, -1); renderSession(); }
-  } else {
+  } else if (s.q.options) {
     const n = Number(ev.key);
     const count = s.q.mode === 'tf' ? 2 : s.q.options.length;
     if (n >= 1 && n <= count) { s.sel = n - 1; if (s.instant) check(); else renderSession(); }
@@ -1354,7 +1508,8 @@ document.addEventListener('keydown', (ev) => {
 
 // ---------- Inicialização ----------
 if (!S().profile.year) S().profile.year = 3;
-Promise.all([C.loadBncc(), C.loadContent(YEAR()), C.loadCurios()]).then(render);
+G.init({ render: () => { if (session && !session.ended) renderSession(); }, speak });
+Promise.all([C.loadBncc(), C.loadYear(YEAR()), C.loadCurios()]).then(render);
 if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
 if ('serviceWorker' in navigator && window.isSecureContext) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});

@@ -716,7 +716,6 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 .cfg-item small { display: block; color: var(--muted); font-size: 14px; }
 .cfg-item:active { transform: translateY(2px); border-bottom-width: 2px; }
 .about p + p { margin-top: 6px; }
-@media (min-width: 700px) { .cfg-list { max-width: 560px; } }
 
 /* Trilhas: cabeçalho e abas na largura toda; caminho na coluna central */
 @media (min-width: 700px) {
@@ -741,7 +740,6 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 .cfg-profile { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
 .cfg-profile label { font-size: 15px; margin-top: 4px; }
 .cfg-profile label small { color: var(--muted); font-size: 13px; }
-@media (min-width: 700px) { .cfg-profile { max-width: 560px; } }
 
 /* ---------- Trilhas: mesma largura e espaçamento padrão ---------- */
 .page-learn > * { width: 100%; }
@@ -755,4 +753,109 @@ pre.conta { margin: 0; font-family: ui-monospace, 'Courier New', monospace; font
 @media (min-width: 700px) {
   .page-learn .main-head { margin-bottom: 18px; }
   .page-learn .unit-banner { padding: 18px 22px; }
+}
+
+/* Abas das 4 operações: nomes completos sem cortar */
+.op-tab span { overflow: visible; text-overflow: clip; white-space: normal; line-height: 1.15; font-size: 12px; }
+@media (max-width: 420px) {
+  .op-tabs { gap: 6px; }
+  .op-tab { padding: 8px 2px; }
+  .op-tab span { font-size: 10.5px; letter-spacing: -.2px; }
+}
+
+/* Configurações: todos os cartões com 100% da largura */
+.page-config > * { width: 100%; }
+.cfg-list, .cfg-profile, .page-config .box { width: 100%; max-width: none; }
+
+/* ---------- Jogos das matérias ---------- */
+.section-sub { margin: -6px 0 12px; }
+.game-strip { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-bottom: 18px; }
+.game-chip { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 2px solid var(--line); border-bottom-width: 4px; border-left: 6px solid var(--c); border-radius: 16px; background: #fff; text-align: left; }
+.game-chip b { display: block; font-size: 17px; }
+.game-chip small { display: block; color: var(--muted); font-size: 13px; }
+.game-chip > .ico { color: var(--faint); }
+.game-chip:active { transform: translateY(2px); border-bottom-width: 2px; }
+.games-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.game-card-btn { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; min-width: 0; text-align: left;
+  border: 2px solid var(--line); border-bottom-width: 4px; border-radius: var(--radius); background: #fff; }
+.game-card-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
+.game-card-btn .sic { width: 46px; height: 46px; border-radius: 14px; margin-bottom: 4px; }
+.game-card-btn small { color: var(--c); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
+.game-card-btn b { font-size: 18px; line-height: 1.2; }
+.game-card-btn .desc { font-size: 13px; color: var(--muted); line-height: 1.35; }
+.game-card-btn .rec { margin-top: auto; padding-top: 6px; font-size: 12px; color: var(--faint); }
+.cards.sims .card p { line-height: 1.35; }
+@media (min-width: 700px) {
+  .game-strip { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .games-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.game-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.game-card.left { text-align: left; align-items: stretch; }
+.game-card.slim { padding: 10px 14px; }
+.game-card .speak-btn.big { position: static; width: 64px; height: 64px; border-radius: 50%; background: var(--blue-l); display: grid; place-items: center; }
+.game-card .story { overflow-wrap: anywhere; }
+.expr-big.word { font-size: clamp(28px, 8vw, 44px); letter-spacing: 0; overflow-wrap: anywhere; }
+.note-line { margin-top: 6px; font-weight: 700; }
+.clues { margin: 10px 0 12px; padding-left: 24px; font-size: 18px; line-height: 1.45; }
+.clues li { margin-bottom: 4px; }
+.chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
+.price { display: inline-flex; flex-direction: column; align-items: center; padding: 8px 14px; border-radius: 12px; background: var(--yellow-l); border: 2px solid #f3dc8a; font-size: 15px; }
+.price b { font-size: 16px; }
+.art-card { margin: 0; display: flex; justify-content: center; }
+.art-card img { display: block; max-width: 100%; max-height: 38vh; border-radius: 12px; border: 2px solid var(--line); background: var(--bg2); }
+
+/* Soletrando: teclado de letras */
+.answer-box.word { font-size: clamp(24px, 7vw, 34px); letter-spacing: 1px; min-height: 64px; overflow-wrap: anywhere; padding: 6px 10px; }
+.letterpad { display: flex; flex-direction: column; gap: 6px; }
+.lp-row { display: flex; gap: 5px; justify-content: center; }
+.lp-row button { flex: 1 1 0; min-width: 0; max-width: 46px; min-height: 46px; font-size: 20px; font-weight: 900; border-radius: 10px;
+  border: 2px solid var(--line); border-bottom-width: 4px; background: #fff; }
+.lp-row button:active { transform: translateY(2px); border-bottom-width: 2px; }
+.lp-row button.wide { max-width: 200px; flex: 2 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 16px; }
+.lp-row button.del { color: var(--red); }
+
+/* Linha do tempo */
+.order-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.order-list li, .order-list li button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; }
+.order-list li { border: 2px dashed var(--line-d); border-radius: 14px; padding: 10px 12px; min-height: 52px; font-size: 16px; line-height: 1.3; }
+.order-list li:has(button) { border-style: solid; border-color: var(--blue-b); background: var(--blue-l); padding: 0; }
+.order-list li button { padding: 10px 12px; min-height: 52px; color: var(--blue-d); font-size: 16px; }
+.order-list .num { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 2px solid var(--line); display: grid; place-items: center; font-size: 14px; color: var(--text); }
+.order-list.result li { border-style: solid; }
+.order-list.result li.right { border-color: var(--green); background: var(--green-l); color: var(--green-t); }
+.order-list.result li.wrong { border-color: var(--red); background: var(--red-l); color: var(--red-d); }
+.order-list.result small { flex: none; font-size: 13px; font-weight: 900; }
+.order-list + .choices { margin-top: 12px; }
+
+/* Onde fica? (mapa) */
+.map-wrap { border: 2px solid var(--line); border-radius: 16px; background: #dff3ff; overflow: hidden; touch-action: manipulation; }
+.map { display: block; width: 100%; height: auto; max-height: 56vh; }
+.map path { fill: #f1ead2; stroke: #8a8a8a; stroke-width: .5; vector-effect: non-scaling-stroke; cursor: pointer; }
+.map path.far { fill: #e4e0d4; }
+.map path.ct-am { fill: #ffe2b8; } .map path.ct-eu { fill: #e6d8ff; } .map path.ct-af { fill: #ffd2d2; }
+.map path.ct-as { fill: #d6f5c7; } .map path.ct-oc { fill: #cfe9ff; } .map path.ct-an { fill: #e9edf0; }
+.map path.sel { fill: var(--blue); }
+.map path.right { fill: var(--green); }
+.map path.wrong { fill: var(--red); }
+@media (hover: hover) { .map path:hover { filter: brightness(.92); } }
+
+/* Jogo da memória */
+.pairs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pcard { min-height: 76px; padding: 10px; border-radius: 14px; border: 2px solid var(--gray-b, #cfcaf3); border-bottom-width: 4px; background: #ecebfa; color: #6c62b3;
+  display: grid; place-items: center; font-size: 16px; line-height: 1.25; text-align: center; overflow-wrap: anywhere; }
+.pcard.open { background: #fff; color: var(--text); border-color: var(--line); }
+.pcard.done { background: var(--green-l); border-color: var(--green); color: var(--green-t); }
+.pcard:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 2px; }
+@media (min-width: 560px) { .pairs { grid-template-columns: repeat(4, minmax(0, 1fr)); } .pcard { min-height: 96px; } }
+
+/* Boletim e tabelas de simulado */
+.b-n { margin-left: 6px; font-size: 14px; }
+.sim-per { display: inline-flex; flex-wrap: wrap; gap: 3px; }
+.sim-per i { font-style: normal; font-size: 11px; padding: 1px 5px; border-radius: 5px; white-space: nowrap; }
+.sim-per .g { background: #c9f2a8; } .sim-per .y { background: #ffe9a3; } .sim-per .r { background: #ffc9c9; }
+@media (max-width: 699px) {
+  .game-strip.many { display: flex; overflow-x: auto; margin: 0 -16px 18px; padding: 2px 16px 6px; scrollbar-width: none; }
+  .game-strip.many::-webkit-scrollbar { display: none; }
+  .game-strip.many .game-chip { flex: 0 0 auto; width: 210px; }
 }

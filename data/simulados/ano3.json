@@ -1,0 +1,191 @@
+{
+  "ano": 3,
+  "versao": "2026-10-18",
+  "nota": "Etapas seguem os trimestres do currículo da rede municipal de Joinville. Cada questão: [enunciado, [certa, erradas...], explicação, habilidade BNCC].",
+  "simulados": [
+    {
+      "id": "y3-sim-1",
+      "titulo": "Simulado do 1º trimestre",
+      "etapa": 1,
+      "temas": "Números até 3000, adição e subtração, horas · ortografia, sílabas, receitas e cartas · som e luz · Joinville e seus grupos · cidade e campo",
+      "questoes": {
+        "ma": [
+          ["Como se escreve 2.408 por extenso?", ["Dois mil quatrocentos e oito", "Dois mil quarenta e oito", "Duzentos e quarenta e oito", "Dois mil e quatrocentos e oitenta"], "2.408 tem 2 milhares, 4 centenas, 0 dezenas e 8 unidades.", "EF03MA01"],
+          ["No número 1.574, quanto vale o algarismo 5?", ["500", "5", "50", "5.000"], "O 5 está na casa das centenas, então vale 500.", "EF03MA02"],
+          ["Ana tinha 245 figurinhas e ganhou mais 132. Com quantas ficou?", ["377", "367", "113", "387"], "245 + 132 = 377.", "EF03MA06"],
+          ["Qual número completa a sequência: 120, 130, 140, ___, 160?", ["150", "145", "141", "170"], "A sequência aumenta de 10 em 10.", "EF03MA10"],
+          ["O relógio marca 3 horas e 30 minutos. Que horas serão daqui a 1 hora?", ["4 horas e 30 minutos", "3 horas e 31 minutos", "4 horas", "5 horas e 30 minutos"], "Passa 1 hora e os minutos continuam iguais.", "EF03MA23"]
+        ],
+        "lp": [
+          ["Qual palavra está escrita certo?", ["carroça", "caroça", "carrosa", "karroça"], "Entre duas vogais, o som forte do r se escreve com rr.", "EF03LP01"],
+          ["Quantas sílabas tem a palavra borboleta?", ["4", "3", "5", "2"], "bor-bo-le-ta.", "EF03LP05"],
+          ["Em café, a sílaba mais forte é a última. Então café é uma palavra:", ["Oxítona", "Paroxítona", "Proparoxítona", "Sem sílaba forte"], "Oxítona tem a última sílaba mais forte.", "EF03LP06"],
+          ["Numa receita, a parte Modo de fazer serve para:", ["Explicar os passos do preparo", "Contar uma história", "Mostrar o preço", "Dizer o nome do autor"], "Receitas são textos instrucionais: ensinam a fazer.", "EF03LP11"],
+          ["Na frase O gato preguiçoso dormiu no sofá, qual palavra é um adjetivo?", ["preguiçoso", "gato", "dormiu", "sofá"], "O adjetivo dá uma característica: o gato é preguiçoso.", "EF03LP09"]
+        ],
+        "ci": [
+          ["O que acontece quando a luz encontra um objeto opaco, como uma parede?", ["A luz não atravessa e forma sombra", "A luz atravessa toda", "A luz vira som", "O objeto fica transparente"], "Objetos opacos não deixam a luz passar.", "EF03CI02"],
+          ["Qual hábito protege a audição?", ["Ouvir música em volume baixo", "Usar fone de ouvido bem alto", "Gritar perto do ouvido", "Colocar objetos no ouvido"], "Som muito alto pode machucar o ouvido.", "EF03CI03"]
+        ],
+        "hi": [
+          ["Em que dia se comemora o aniversário de Joinville?", ["9 de março", "7 de setembro", "25 de dezembro", "15 de novembro"], "Em 9 de março de 1851 chegaram os imigrantes da barca Colon.", "EF03HI01"],
+          ["Os sambaquis da região de Joinville são:", ["Montes de conchas deixados por povos muito antigos", "Prédios modernos", "Rios da cidade", "Festas de imigrantes"], "Eles mostram que havia gente aqui há milhares de anos.", "EF03HI04"]
+        ],
+        "ge": [
+          ["Qual atividade é mais comum no campo?", ["Plantar e criar animais", "Trabalhar em grandes fábricas", "Andar de metrô", "Morar em prédios altos"], "No campo há plantações e criações.", "EF03GE01"],
+          ["Quais povos indígenas vivem em Santa Catarina?", ["Guarani, Kaingang e Xokleng", "Maias e astecas", "Incas", "Vikings"], "Esses povos vivem no nosso estado até hoje.", "EF03GE02"]
+        ],
+        "ar": [
+          ["Ponto, linha, forma e cor são:", ["Elementos das artes visuais", "Instrumentos musicais", "Passos de dança", "Personagens de teatro"], "Com eles fazemos desenhos e pinturas.", "EF15AR02"]
+        ],
+        "ef": [
+          ["A peteca é um brinquedo de origem:", ["Indígena", "Japonesa", "Russa", "Norte-americana"], "A palavra peteca vem do tupi e quer dizer bater com a mão.", "EF35EF01"]
+        ],
+        "li": [
+          ["Como se diz bom dia em inglês?", ["Good morning", "Good night", "Goodbye", "Thank you"], "Good night é boa noite; goodbye é tchau."]
+        ],
+        "er": [
+          ["Igreja, sinagoga, mesquita e terreiro são:", ["Espaços religiosos de diferentes tradições", "Escolas de esporte", "Lojas", "Hospitais"], "Cada tradição tem seus espaços sagrados.", "EF03ER01"]
+        ]
+      }
+    },
+    {
+      "id": "y3-sim-2",
+      "titulo": "Simulado do 2º trimestre",
+      "etapa": 2,
+      "temas": "Números até 6000, multiplicação, divisão, metade, dinheiro e sólidos · acentos, prefixos, publicidade e cartas · animais · marcos da memória · mapas e legendas",
+      "questoes": {
+        "ma": [
+          ["Uma caixa tem 4 fileiras com 5 bombons em cada. Quantos bombons há na caixa?", ["20", "9", "15", "25"], "4 vezes 5 é 20.", "EF03MA07"],
+          ["18 balas foram divididas igualmente entre 3 crianças. Quantas balas cada uma ganhou?", ["6", "5", "9", "3"], "18 dividido por 3 é 6, porque 3 × 6 = 18.", "EF03MA08"],
+          ["Qual é a metade de 50?", ["25", "20", "100", "5"], "25 + 25 = 50.", "EF03MA09"],
+          ["Paulo pagou um lanche de R$ 7 com uma nota de R$ 10. Quanto recebeu de troco?", ["R$ 3", "R$ 17", "R$ 7", "R$ 4"], "10 − 7 = 3.", "EF03MA24"],
+          ["Uma bola de futebol parece qual figura geométrica?", ["Esfera", "Cubo", "Cilindro", "Pirâmide"], "A esfera é toda redonda.", "EF03MA13"]
+        ],
+        "lp": [
+          ["Qual palavra se escreve com h no começo?", ["hoje", "ontem", "agora", "antes"], "O h do começo não tem som; é preciso memorizar.", "EF35LP13"],
+          ["Em infeliz, o pedaço in deixou a palavra com sentido de:", ["O contrário de feliz", "Muito feliz", "Feliz de novo", "Um pouco feliz"], "O prefixo in pode dar a ideia de contrário.", "EF03LP10"],
+          ["Qual palavra está acentuada do jeito certo?", ["você", "vóce", "vocé", "vôce"], "Você tem acento circunflexo no e.", "EF03LP04"],
+          ["Um anúncio publicitário quer principalmente:", ["Convencer as pessoas a comprar ou fazer algo", "Contar um conto de fadas", "Ensinar uma receita", "Mostrar um poema"], "O anúncio usa cores, frases e imagens para convencer.", "EF03LP19"],
+          ["Numa carta de reclamação, a pessoa:", ["Conta um problema e pede uma solução", "Agradece um presente", "Inventa uma história de dragões", "Faz uma lista de compras"], "A carta de reclamação é enviada a jornais, revistas ou empresas.", "EF03LP20"]
+        ],
+        "ci": [
+          ["Qual destes animais tem o corpo coberto de penas?", ["Tucano", "Gato", "Sapo", "Cobra"], "Todas as aves têm penas.", "EF03CI06"],
+          ["Uma lagarta vira borboleta. Isso faz parte do:", ["Ciclo de vida", "Ciclo da água", "Dia e noite", "Eclipse"], "Ovo, lagarta, casulo e borboleta.", "EF03CI05"]
+        ],
+        "hi": [
+          ["Museus, praças e monumentos ajudam a:", ["Guardar a memória da cidade", "Fabricar carros", "Fazer chover", "Medir a temperatura"], "São lugares de memória.", "EF03HI05"],
+          ["Muitos nomes de ruas homenageiam:", ["Pessoas e fatos importantes da história", "Marcas de refrigerante", "Personagens de desenho animado", "Times de futebol de outros países"], "Os nomes contam um pouco da história do lugar.", "EF03HI06"]
+        ],
+        "ge": [
+          ["A legenda de um mapa serve para:", ["Explicar o que os símbolos e as cores significam", "Dizer o preço do mapa", "Mostrar o nome do desenhista", "Enfeitar o papel"], "Sem legenda, não sabemos o que cada símbolo quer dizer.", "EF03GE07"],
+          ["Uma maquete é:", ["Uma representação de um lugar em tamanho pequeno", "Um tipo de música", "Um animal", "Uma fruta"], "Dá para fazer a maquete da escola ou da casa.", "EF03GE06"]
+        ],
+        "ar": [
+          ["Uma pintura monocromática é feita com:", ["Uma só cor e seus tons", "Muitas cores diferentes", "Só sons e ritmos", "Massinha de modelar"], "Mono quer dizer um.", "EF15AR02"]
+        ],
+        "ef": [
+          ["Estrela, rolamento e ponte são movimentos da:", ["Ginástica", "Natação", "Capoeira", "Queimada"], "A ginástica trabalha equilíbrio, força e flexibilidade.", "EF35EF07"]
+        ],
+        "li": [
+          ["Como se diz mãe em inglês?", ["mother", "father", "sister", "brother"], "Father é pai, sister é irmã e brother é irmão."]
+        ],
+        "er": [
+          ["Natal, Páscoa, Ramadã e Hanukkah são:", ["Celebrações de diferentes tradições religiosas", "Esportes", "Nomes de rios", "Instrumentos musicais"], "Cada tradição tem suas festas.", "EF03ER03"]
+        ]
+      }
+    },
+    {
+      "id": "y3-sim-3",
+      "titulo": "Simulado do 3º trimestre",
+      "etapa": 3,
+      "temas": "Números até 9999, partes, medidas e tempo · poemas, rimas, cordel, verbos e pontuação · Terra, céu e solo · espaços públicos · água e consumo",
+      "questoes": {
+        "ma": [
+          ["Qual é o maior número?", ["9.087", "8.999", "9.078", "7.990"], "Compare os milhares, depois as centenas, as dezenas e as unidades.", "EF03MA01"],
+          ["Qual é a décima parte de 100?", ["10", "100", "1", "50"], "100 dividido por 10 é 10.", "EF03MA09"],
+          ["Para medir quanta água cabe numa garrafa, usamos o:", ["Litro", "Quilograma", "Metro", "Minuto"], "Litro mede capacidade.", "EF03MA20"],
+          ["Um filme começou às 2 horas e terminou às 4 horas. Quanto tempo durou?", ["2 horas", "4 horas", "6 horas", "1 hora"], "De 2 para 4 passam 2 horas.", "EF03MA22"],
+          ["Um dado tem a forma de qual figura?", ["Cubo", "Esfera", "Cone", "Cilindro"], "O cubo tem 6 faces quadradas.", "EF03MA14"]
+        ],
+        "lp": [
+          ["Qual palavra rima com janela?", ["panela", "porta", "sapato", "cadeira"], "Janela e panela terminam com o mesmo som: -ela.", "EF35LP23"],
+          ["Na frase A menina correu no parque, qual palavra é um verbo?", ["correu", "menina", "parque", "no"], "O verbo mostra a ação.", "EF03LP08"],
+          ["Que sinal usamos no fim de uma pergunta?", ["Ponto de interrogação", "Ponto final", "Vírgula", "Dois-pontos"], "Exemplo: Você vem?", "EF03LP07"],
+          ["O cordel é um texto em versos que costuma ser vendido:", ["Pendurado em cordões nas feiras", "Só em celulares", "Dentro de garrafas", "Em placas de trânsito"], "Por isso se chama literatura de cordel.", "EF03LP27"],
+          ["Em uma história, o personagem principal é:", ["Quem vive a aventura principal", "O lugar onde tudo acontece", "O título", "O fim da história"], "Também chamado de protagonista.", "EF35LP29"]
+        ],
+        "ci": [
+          ["Qual é o formato da Terra?", ["Quase uma esfera", "Plano como uma mesa", "Um cubo", "Um triângulo"], "Fotos tiradas do espaço mostram a Terra redonda.", "EF03CI07"],
+          ["Por que o solo é importante?", ["Nele crescem as plantas que nos alimentam", "Ele não serve para nada", "Ele produz a luz do dia", "Ele deixa o mar salgado"], "Agricultura depende de solo bem cuidado.", "EF03CI10"]
+        ],
+        "hi": [
+          ["Qual destes é um espaço público?", ["A praça", "O quarto da sua casa", "O quintal do vizinho", "A cozinha"], "Espaços públicos são de todos.", "EF03HI09"],
+          ["Na Câmara de Vereadores, os vereadores:", ["Fazem as leis da cidade", "Apagam incêndios", "Atendem doentes", "Dirigem os ônibus"], "A Câmara fica no centro de Joinville.", "EF03HI09"]
+        ],
+        "ge": [
+          ["Separar o lixo reciclável ajuda a:", ["Reaproveitar materiais e poluir menos", "Gastar mais água", "Aumentar o lixo", "Sujar os rios"], "Papel, plástico, metal e vidro podem ser reciclados.", "EF03GE08"],
+          ["Qual atitude economiza água?", ["Fechar a torneira ao escovar os dentes", "Lavar a calçada com mangueira", "Tomar banhos bem longos", "Deixar a torneira pingando"], "Água potável é um bem de todos.", "EF03GE09"]
+        ],
+        "ar": [
+          ["No teatro, a sonoplastia cuida:", ["Dos sons e ruídos da cena", "Das roupas", "Da pintura do cenário", "Da venda de ingressos"], "Barulho de chuva, porta rangendo, passos...", "EF15AR19"]
+        ],
+        "ef": [
+          ["Vôlei e tênis são esportes de:", ["Rede ou parede", "Campo e taco", "Luta", "Ginástica"], "A bola passa por cima de uma rede.", "EF35EF05"]
+        ],
+        "li": [
+          ["Como se diz maçã em inglês?", ["apple", "banana", "grape", "lemon"], "Grape é uva e lemon é limão."]
+        ],
+        "er": [
+          ["Roupas e acessórios usados em celebrações religiosas são chamados de:", ["Indumentárias religiosas", "Uniformes escolares", "Fantasias de carnaval", "Roupas de esporte"], "Exemplos: quipá, hijab, batina, fio de contas.", "EF03ER05"]
+        ]
+      }
+    },
+    {
+      "id": "y3-sim-final",
+      "titulo": "Simulado final do 3º ano",
+      "etapa": 4,
+      "temas": "Revisão do ano todo, em todas as matérias",
+      "questoes": {
+        "ma": [
+          ["Quanto é 5 × 6?", ["30", "11", "25", "35"], "5 + 5 + 5 + 5 + 5 + 5 = 30.", "EF03MA07"],
+          ["Qual conta dá 100?", ["60 + 40", "50 + 40", "70 + 20", "80 + 30"], "60 + 40 = 100.", "EF03MA05"],
+          ["Joana tem 3 notas de R$ 5. Quanto dinheiro ela tem?", ["R$ 15", "R$ 8", "R$ 10", "R$ 53"], "3 × 5 = 15.", "EF03MA24"],
+          ["Quantos lados tem um quadrado?", ["4", "3", "5", "6"], "Os 4 lados do quadrado têm o mesmo tamanho.", "EF03MA15"],
+          ["Num gráfico de barras, a barra mais alta mostra:", ["O que tem a maior quantidade", "O que tem a menor quantidade", "A cor preferida de quem fez", "O título do gráfico"], "Quanto mais alta a barra, maior o número.", "EF03MA27"]
+        ],
+        "lp": [
+          ["Qual palavra tem dígrafo?", ["chuva", "bola", "pato", "dado"], "Em chuva, as letras c e h juntas fazem um só som.", "EF03LP03"],
+          ["Qual palavra é proparoxítona?", ["lâmpada", "café", "mesa", "avô"], "lâm-pa-da: a sílaba forte é a antepenúltima.", "EF03LP06"],
+          ["Um diário serve para:", ["Contar o que aconteceu no dia e o que sentimos", "Vender produtos", "Ensinar uma receita", "Dar notícias para a cidade"], "O diário é pessoal e tem data.", "EF03LP12"],
+          ["Em Que lindo!, o ponto de exclamação mostra:", ["Admiração ou emoção", "Uma pergunta", "Uma lista", "Que a frase continua"], "Também mostra surpresa, alegria ou susto.", "EF03LP07"],
+          ["Qual palavra está escrita certo?", ["guitarra", "gitarra", "guitara", "quitarra"], "Antes de e e i, o som de g de gato se escreve gu.", "EF03LP01"]
+        ],
+        "ci": [
+          ["A Lua muda de aparência durante o mês. Essas mudanças são as:", ["Fases da Lua", "Estações do ano", "Marés", "Nuvens"], "Nova, crescente, cheia e minguante.", "EF03CI08"],
+          ["Para um som ser produzido, alguma coisa precisa:", ["Vibrar", "Brilhar", "Congelar", "Ficar parada"], "Toque numa corda de violão e veja ela vibrar.", "EF03CI01"]
+        ],
+        "hi": [
+          ["Os imigrantes da Colônia Dona Francisca, que deu origem a Joinville, vieram principalmente:", ["Da Alemanha, da Suíça e da Noruega", "Do Japão", "Da China", "Da Austrália"], "Eles chegaram em 1851.", "EF03HI01"],
+          ["Qual destas pode ser uma fonte histórica?", ["Uma foto antiga, uma carta ou um objeto antigo", "Um sonho", "Uma nuvem", "Um desenho animado de hoje"], "Fontes históricas ajudam a contar o passado.", "EF03HI04"]
+        ],
+        "ge": [
+          ["A Baía da Babitonga, perto de Joinville, tem muitos:", ["Manguezais", "Desertos", "Vulcões", "Geleiras"], "O manguezal é berçário de caranguejos e peixes.", "EF03GE04"],
+          ["Fábricas, lojas e serviços são mais comuns:", ["Na cidade", "No fundo do mar", "No deserto", "No espaço"], "Joinville é a maior cidade de Santa Catarina e tem muitas indústrias.", "EF03GE01"]
+        ],
+        "ar": [
+          ["Joinville é famosa pelo seu grande festival de:", ["Dança", "Carros antigos", "Pipas", "Cinema de terror"], "O Festival de Dança de Joinville acontece desde 1983.", "EF15AR08"]
+        ],
+        "ef": [
+          ["A capoeira mistura luta, música e dança e tem origem:", ["Afro-brasileira", "Japonesa", "Russa", "Francesa"], "Ela é patrimônio cultural do Brasil.", "EF35EF13"]
+        ],
+        "li": [
+          ["Como se diz azul em inglês?", ["blue", "red", "green", "yellow"], "Red é vermelho, green é verde e yellow é amarelo."]
+        ],
+        "er": [
+          ["Para conviver bem com pessoas de outras crenças, devemos:", ["Respeitar e conhecer as diferenças", "Rir das crenças dos outros", "Obrigar todos a pensar igual", "Não conversar com ninguém"], "Respeito é a base da convivência.", "EF03ER02"]
+        ]
+      }
+    }
+  ]
+}

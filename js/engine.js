@@ -94,10 +94,10 @@ const tableUnit = (id, op, title, subtitle, color, label) => ({
 });
 
 export const UNITS = [
-  tableUnit('add', 'add', 'Adição', 'Tabuada da soma do 1 ao 9', 'purple', (n) => `Tabuada do ${n} de somar`),
-  tableUnit('subt', 'sub', 'Subtração', 'Tabuada de tirar do 1 ao 9', 'orange', (n) => `Tabuada do ${n} de tirar`),
-  tableUnit('mul', 'mul', 'Multiplicação', 'Tabuada de vezes do 1 ao 9', 'green', (n) => `Tabuada do ${n} de vezes`),
-  tableUnit('div', 'div', 'Divisão', 'Tabuada de dividir do 1 ao 9', 'blue', (n) => `Tabuada do ${n} de dividir`),
+  tableUnit('add', 'add', 'Adição', 'Tabuada de adição do 1 ao 9', 'purple', (n) => `Tabuada do ${n} de adição`),
+  tableUnit('subt', 'sub', 'Subtração', 'Tabuada de subtração do 1 ao 9', 'orange', (n) => `Tabuada do ${n} de subtração`),
+  tableUnit('mul', 'mul', 'Multiplicação', 'Tabuada de multiplicação do 1 ao 9', 'green', (n) => `Tabuada do ${n} de multiplicação`),
+  tableUnit('div', 'div', 'Divisão', 'Tabuada de divisão do 1 ao 9', 'blue', (n) => `Tabuada do ${n} de divisão`),
   {
     id: 'sub', op: 'sub', title: 'Contas maiores', subtitle: 'Subtração com dezenas e centenas', color: 'red', sym: SYM.sub,
     nodes: SUB_LEVELS.map((l, i) => ({ id: `sub-${i + 1}`, unit: 'sub', op: 'sub', n: i + 1, title: l.title, icon: `${i + 1}` })),
@@ -295,6 +295,8 @@ const fresh = () => ({
   skills: {},
   best: { time: { add: 0, mul: 0, div: 0, sub: 0, mix: 0 }, survival: 0, master: 0, streak: 0, ch: {} },
   tests: [],
+  games: {},
+  simulados: [],
   daily: {},
   ach: {},
   flags: {},
@@ -497,6 +499,21 @@ export function saveRecord(mode, op, n, score) {
   return isNew;
 }
 
+// Jogos por matéria: vezes jogadas, melhor aproveitamento e última partida
+export function saveGame(id, correct, total) {
+  const g = (state.games[id] ||= { plays: 0, best: 0, last: null });
+  const rate = total ? correct / total : 0;
+  const isNew = g.plays > 0 && rate > g.best;
+  g.plays++;
+  g.best = Math.max(g.best, rate);
+  g.last = { ts: Date.now(), correct, total };
+  return isNew;
+}
+export function saveSimulado(entry) {
+  state.simulados.unshift({ ts: Date.now(), ...entry });
+  state.simulados = state.simulados.slice(0, 40);
+}
+
 export const ACHIEVEMENTS = [
   { id: 'first', title: 'Primeiro passo', desc: 'Complete a primeira lição', test: () => (state.flags.lessons || 0) >= 1 },
   { id: 'perfect', title: 'Perfeito!', desc: 'Faça uma lição sem errar nada', test: () => !!state.flags.perfect },
@@ -519,6 +536,9 @@ export const ACHIEVEMENTS = [
   { id: 'daily5', title: 'Todo dia', desc: 'Complete 5 desafios do dia', test: () => Object.keys(state.daily).length >= 5 },
   { id: 'master', title: 'Mestre da tabuada', desc: 'Acerte 18 de 20 em todas as tabuadas de vezes', test: () => state.best.master >= 18 },
   { id: 'test', title: 'Boletim nota 10', desc: 'Acerte tudo num Teste de progresso', test: () => state.tests.some((t) => t.score === t.total) },
+  { id: 'sim1', title: 'Primeiro simulado', desc: 'Faça um simulado até o fim', test: () => state.simulados.length >= 1 },
+  { id: 'sim18', title: 'Nota alta', desc: 'Acerte 18 de 20 num simulado', test: () => state.simulados.some((x) => x.total >= 20 && x.score >= 18) },
+  { id: 'games9', title: 'Jogador de tudo', desc: 'Jogue o jogo de 9 matérias diferentes', test: () => new Set(Object.keys(state.games).map((k) => k.split('-')[1])).size >= 9 },
   { id: 'xp1000', title: '1000 XP', desc: 'Junte 1000 pontos de experiência', test: () => state.xp >= 1000 },
 ];
 export function checkAchievements() {
@@ -649,7 +669,7 @@ export function testQuestions(op) {
   return shuffle(qs);
 }
 export function testGroupLabel(op, n) {
-  return `Tabuada do ${n} de ${{ add: 'somar', sub: 'tirar', mul: 'vezes', div: 'dividir' }[op]}`;
+  return `Tabuada do ${n} de ${{ add: 'adição', sub: 'subtração', mul: 'multiplicação', div: 'divisão' }[op]}`;
 }
 export function testNodeId(op, n) { return `${op}-${n}`; }
 

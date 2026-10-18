@@ -1,0 +1,1808 @@
+{
+  "ano": 3,
+  "versao": "2026-10-18",
+  "jogos": {
+    "lp": {
+      "tipo": "soletrando",
+      "titulo": "Soletrando",
+      "desc": "Ouça a palavra e escreva sem errar nenhuma letra.",
+      "niveis": [
+        {
+          "nome": "lh, nh e ch",
+          "skill": "EF03LP03",
+          "itens": [
+            [
+              "abelha",
+              "A abelha faz mel."
+            ],
+            [
+              "coelho",
+              "O coelho comeu a cenoura."
+            ],
+            [
+              "folha",
+              "A folha caiu da árvore."
+            ],
+            [
+              "olho",
+              "Fechei um olho para mirar."
+            ],
+            [
+              "galinha",
+              "A galinha botou um ovo."
+            ],
+            [
+              "ninho",
+              "O passarinho fez um ninho."
+            ],
+            [
+              "banho",
+              "Depois do jogo, tomei banho."
+            ],
+            [
+              "sonho",
+              "Tive um sonho bonito."
+            ],
+            [
+              "chuva",
+              "A chuva molhou o quintal."
+            ],
+            [
+              "chave",
+              "Perdi a chave de casa."
+            ],
+            [
+              "bicho",
+              "Que bicho é esse?"
+            ],
+            [
+              "cachorro",
+              "O cachorro abanou o rabo."
+            ]
+          ]
+        },
+        {
+          "nome": "r ou rr, s ou ss",
+          "skill": "EF03LP01",
+          "itens": [
+            [
+              "carro",
+              "O carro parou no sinal."
+            ],
+            [
+              "terra",
+              "A minhoca vive na terra."
+            ],
+            [
+              "barriga",
+              "Comi tanto que a barriga doeu."
+            ],
+            [
+              "ferro",
+              "O portão é de ferro."
+            ],
+            [
+              "pássaro",
+              "O pássaro cantou cedo."
+            ],
+            [
+              "osso",
+              "O cachorro enterrou o osso."
+            ],
+            [
+              "massa",
+              "A massa do bolo cresceu."
+            ],
+            [
+              "vassoura",
+              "Varri a sala com a vassoura."
+            ],
+            [
+              "girassol",
+              "O girassol segue o sol."
+            ],
+            [
+              "passeio",
+              "Fizemos um passeio no parque."
+            ],
+            [
+              "arroz",
+              "Comi arroz com feijão."
+            ],
+            [
+              "sorvete",
+              "O sorvete derreteu."
+            ]
+          ]
+        },
+        {
+          "nome": "c ou qu, g ou gu",
+          "skill": "EF03LP01",
+          "itens": [
+            [
+              "queijo",
+              "O rato comeu o queijo."
+            ],
+            [
+              "quente",
+              "A sopa está quente."
+            ],
+            [
+              "quintal",
+              "Brincamos no quintal."
+            ],
+            [
+              "esquilo",
+              "O esquilo guardou a noz."
+            ],
+            [
+              "guerra",
+              "Fizemos guerra de travesseiros."
+            ],
+            [
+              "guitarra",
+              "Meu tio toca guitarra."
+            ],
+            [
+              "foguete",
+              "O foguete subiu para o espaço."
+            ],
+            [
+              "formiga",
+              "A formiga carrega folhas."
+            ],
+            [
+              "caqui",
+              "O caqui está maduro."
+            ],
+            [
+              "preguiça",
+              "A preguiça vive nas árvores."
+            ],
+            [
+              "águia",
+              "A águia voa muito alto."
+            ],
+            [
+              "leque",
+              "Ela se abanou com o leque."
+            ]
+          ]
+        },
+        {
+          "nome": "m antes de p e b, til",
+          "skill": "EF03LP01",
+          "itens": [
+            [
+              "bombom",
+              "Ganhei um bombom de chocolate."
+            ],
+            [
+              "campo",
+              "O campo tem muitas flores."
+            ],
+            [
+              "tempo",
+              "Hoje o tempo está bom."
+            ],
+            [
+              "sombra",
+              "Descansei na sombra da árvore."
+            ],
+            [
+              "lâmpada",
+              "A lâmpada queimou."
+            ],
+            [
+              "pão",
+              "Comi pão com manteiga."
+            ],
+            [
+              "mãe",
+              "Minha mãe chegou cedo."
+            ],
+            [
+              "limão",
+              "Fiz suco de limão."
+            ],
+            [
+              "balão",
+              "O balão subiu."
+            ],
+            [
+              "coração",
+              "O coração bate rápido."
+            ],
+            [
+              "bambu",
+              "O panda come bambu."
+            ],
+            [
+              "empada",
+              "Comprei uma empada."
+            ]
+          ]
+        },
+        {
+          "nome": "Acentos",
+          "skill": "EF03LP04",
+          "itens": [
+            [
+              "café",
+              "O café está quente."
+            ],
+            [
+              "sofá",
+              "O gato dorme no sofá."
+            ],
+            [
+              "avó",
+              "Minha avó faz bolo."
+            ],
+            [
+              "avô",
+              "Meu avô conta histórias."
+            ],
+            [
+              "você",
+              "Você quer brincar?"
+            ],
+            [
+              "bebê",
+              "O bebê dormiu."
+            ],
+            [
+              "jacaré",
+              "O jacaré vive no rio."
+            ],
+            [
+              "ônibus",
+              "Fui à escola de ônibus."
+            ],
+            [
+              "lápis",
+              "Apontei o lápis."
+            ],
+            [
+              "árvore",
+              "Subi na árvore."
+            ],
+            [
+              "pé",
+              "Machuquei o pé."
+            ],
+            [
+              "máquina",
+              "A máquina de lavar está ligada."
+            ]
+          ]
+        },
+        {
+          "nome": "h, x e ch",
+          "skill": "EF35LP13",
+          "itens": [
+            [
+              "hora",
+              "Que horas são?"
+            ],
+            [
+              "hoje",
+              "Hoje é dia de festa."
+            ],
+            [
+              "homem",
+              "O homem plantou uma árvore."
+            ],
+            [
+              "hospital",
+              "O médico trabalha no hospital."
+            ],
+            [
+              "xícara",
+              "Tomei chá na xícara."
+            ],
+            [
+              "peixe",
+              "O peixe nada no aquário."
+            ],
+            [
+              "caixa",
+              "Guardei os brinquedos na caixa."
+            ],
+            [
+              "abacaxi",
+              "O abacaxi é doce."
+            ],
+            [
+              "lixo",
+              "Joguei o papel no lixo."
+            ],
+            [
+              "chinelo",
+              "Perdi um pé do chinelo."
+            ],
+            [
+              "mochila",
+              "Arrumei a mochila."
+            ],
+            [
+              "xadrez",
+              "Aprendi a jogar xadrez."
+            ]
+          ]
+        }
+      ]
+    },
+    "ma": {
+      "tipo": "mercadinho",
+      "titulo": "Mercadinho",
+      "desc": "Faça as contas das compras e do troco, em reais.",
+      "skills": [
+        "EF03MA24",
+        "EF03MA05",
+        "EF03MA06",
+        "EF03MA07"
+      ],
+      "notas": [
+        2,
+        5,
+        10,
+        20,
+        50,
+        100
+      ],
+      "produtos": [
+        [
+          "lápis",
+          2
+        ],
+        [
+          "borracha",
+          1
+        ],
+        [
+          "caderno",
+          12
+        ],
+        [
+          "caneta",
+          3
+        ],
+        [
+          "régua",
+          4
+        ],
+        [
+          "mochila",
+          45
+        ],
+        [
+          "suco",
+          4
+        ],
+        [
+          "pão",
+          1
+        ],
+        [
+          "banana",
+          2
+        ],
+        [
+          "maçã",
+          3
+        ],
+        [
+          "bolo",
+          15
+        ],
+        [
+          "leite",
+          5
+        ],
+        [
+          "bola",
+          25
+        ],
+        [
+          "boneca",
+          38
+        ],
+        [
+          "pipa",
+          6
+        ],
+        [
+          "peteca",
+          8
+        ],
+        [
+          "carrinho",
+          18
+        ],
+        [
+          "livro",
+          30
+        ]
+      ]
+    },
+    "ci": {
+      "tipo": "classifica",
+      "titulo": "Classifica!",
+      "desc": "Coloque cada ser ou objeto no grupo certo.",
+      "rodadas": [
+        {
+          "nome": "Ser vivo ou não vivo?",
+          "skill": "EF03CI04",
+          "caixas": [
+            "Ser vivo",
+            "Não vivo"
+          ],
+          "itens": [
+            [
+              "Árvore",
+              "Ser vivo",
+              "Nasce, cresce, se reproduz e morre."
+            ],
+            [
+              "Pedra",
+              "Não vivo"
+            ],
+            [
+              "Cachorro",
+              "Ser vivo"
+            ],
+            [
+              "Água",
+              "Não vivo",
+              "A água é essencial para a vida, mas não é um ser vivo."
+            ],
+            [
+              "Cogumelo",
+              "Ser vivo",
+              "É um fungo: nasce e cresce."
+            ],
+            [
+              "Sol",
+              "Não vivo",
+              "É uma estrela."
+            ],
+            [
+              "Formiga",
+              "Ser vivo"
+            ],
+            [
+              "Nuvem",
+              "Não vivo"
+            ],
+            [
+              "Bicicleta",
+              "Não vivo"
+            ],
+            [
+              "Peixe",
+              "Ser vivo"
+            ],
+            [
+              "Areia",
+              "Não vivo"
+            ],
+            [
+              "Samambaia",
+              "Ser vivo"
+            ]
+          ]
+        },
+        {
+          "nome": "Animal ou vegetal?",
+          "skill": "EF03CI06",
+          "caixas": [
+            "Animal",
+            "Vegetal"
+          ],
+          "itens": [
+            [
+              "Bugio",
+              "Animal",
+              "Macaco que vive na Mata Atlântica, perto de Joinville."
+            ],
+            [
+              "Samambaia",
+              "Vegetal"
+            ],
+            [
+              "Palmito-juçara",
+              "Vegetal",
+              "Palmeira da Mata Atlântica."
+            ],
+            [
+              "Tucano",
+              "Animal"
+            ],
+            [
+              "Ipê",
+              "Vegetal",
+              "Árvore de flores amarelas, roxas ou brancas."
+            ],
+            [
+              "Caranguejo",
+              "Animal",
+              "Vive no manguezal da Baía da Babitonga."
+            ],
+            [
+              "Bromélia",
+              "Vegetal"
+            ],
+            [
+              "Minhoca",
+              "Animal"
+            ],
+            [
+              "Araucária",
+              "Vegetal",
+              "O pinheiro do Paraná, árvore símbolo do Sul."
+            ],
+            [
+              "Jacaré-de-papo-amarelo",
+              "Animal"
+            ],
+            [
+              "Capim",
+              "Vegetal"
+            ],
+            [
+              "Borboleta",
+              "Animal"
+            ]
+          ]
+        },
+        {
+          "nome": "O que ele come?",
+          "skill": "EF03CI04",
+          "caixas": [
+            "Carnívoro",
+            "Herbívoro",
+            "Onívoro"
+          ],
+          "itens": [
+            [
+              "Onça-pintada",
+              "Carnívoro",
+              "Come outros animais."
+            ],
+            [
+              "Coruja",
+              "Carnívoro",
+              "Caça ratos e insetos."
+            ],
+            [
+              "Tubarão",
+              "Carnívoro"
+            ],
+            [
+              "Jacaré",
+              "Carnívoro"
+            ],
+            [
+              "Leão",
+              "Carnívoro"
+            ],
+            [
+              "Capivara",
+              "Herbívoro",
+              "Come capim e plantas aquáticas."
+            ],
+            [
+              "Vaca",
+              "Herbívoro"
+            ],
+            [
+              "Cavalo",
+              "Herbívoro"
+            ],
+            [
+              "Coelho",
+              "Herbívoro"
+            ],
+            [
+              "Girafa",
+              "Herbívoro",
+              "Come folhas do alto das árvores."
+            ],
+            [
+              "Galinha",
+              "Onívoro",
+              "Come grãos, minhocas e insetos."
+            ],
+            [
+              "Porco",
+              "Onívoro"
+            ],
+            [
+              "Urso",
+              "Onívoro",
+              "Come frutas, mel e peixes."
+            ],
+            [
+              "Ser humano",
+              "Onívoro",
+              "Comemos plantas e animais."
+            ],
+            [
+              "Quati",
+              "Onívoro",
+              "Come frutas, ovos e pequenos animais."
+            ]
+          ]
+        },
+        {
+          "nome": "Cobertura do corpo",
+          "skill": "EF03CI06",
+          "caixas": [
+            "Pelos",
+            "Penas",
+            "Escamas",
+            "Pele lisa"
+          ],
+          "itens": [
+            [
+              "Gato",
+              "Pelos"
+            ],
+            [
+              "Cachorro",
+              "Pelos"
+            ],
+            [
+              "Bugio",
+              "Pelos"
+            ],
+            [
+              "Capivara",
+              "Pelos"
+            ],
+            [
+              "Tucano",
+              "Penas"
+            ],
+            [
+              "Papagaio",
+              "Penas"
+            ],
+            [
+              "Galinha",
+              "Penas"
+            ],
+            [
+              "Pinguim",
+              "Penas",
+              "É uma ave, mesmo sem voar."
+            ],
+            [
+              "Peixe",
+              "Escamas"
+            ],
+            [
+              "Cobra",
+              "Escamas"
+            ],
+            [
+              "Lagarto",
+              "Escamas"
+            ],
+            [
+              "Sapo",
+              "Pele lisa",
+              "Pele úmida, sem pelos, penas ou escamas."
+            ],
+            [
+              "Rã",
+              "Pele lisa"
+            ],
+            [
+              "Perereca",
+              "Pele lisa"
+            ]
+          ]
+        },
+        {
+          "nome": "Como nasce?",
+          "skill": "EF03CI05",
+          "caixas": [
+            "De ovo",
+            "Da barriga da mãe"
+          ],
+          "itens": [
+            [
+              "Galinha",
+              "De ovo"
+            ],
+            [
+              "Tartaruga",
+              "De ovo",
+              "A tartaruga enterra os ovos na areia."
+            ],
+            [
+              "Jacaré",
+              "De ovo"
+            ],
+            [
+              "Sapo",
+              "De ovo",
+              "Do ovo sai o girino, que vira sapo."
+            ],
+            [
+              "Borboleta",
+              "De ovo",
+              "Ovo, lagarta, casulo e borboleta."
+            ],
+            [
+              "Pato",
+              "De ovo"
+            ],
+            [
+              "Cachorro",
+              "Da barriga da mãe"
+            ],
+            [
+              "Vaca",
+              "Da barriga da mãe"
+            ],
+            [
+              "Baleia",
+              "Da barriga da mãe",
+              "É um mamífero que vive no mar."
+            ],
+            [
+              "Morcego",
+              "Da barriga da mãe",
+              "É um mamífero que voa."
+            ],
+            [
+              "Gato",
+              "Da barriga da mãe"
+            ],
+            [
+              "Ser humano",
+              "Da barriga da mãe"
+            ]
+          ]
+        }
+      ]
+    },
+    "hi": {
+      "tipo": "linha",
+      "titulo": "Linha do tempo",
+      "desc": "Coloque os fatos em ordem, do mais antigo para o mais recente.",
+      "rodadas": [
+        {
+          "nome": "História de Joinville",
+          "skill": "EF03HI01",
+          "fatos": [
+            [
+              "Povos dos sambaquis vivem perto da Baía da Babitonga",
+              "Há milhares de anos"
+            ],
+            [
+              "Povos indígenas Guarani e Xokleng vivem na região",
+              "Antes de 1500"
+            ],
+            [
+              "A princesa Dona Francisca casa com o príncipe de Joinville e recebe terras na região",
+              "1843"
+            ],
+            [
+              "Chegam os imigrantes da barca Colon e começa a Colônia Dona Francisca",
+              "9 de março de 1851"
+            ],
+            [
+              "Acontece a primeira Festa das Flores",
+              "1936"
+            ],
+            [
+              "Começa o Festival de Dança de Joinville",
+              "1983"
+            ],
+            [
+              "É inaugurada a Escola do Teatro Bolshoi no Brasil",
+              "2000"
+            ]
+          ]
+        },
+        {
+          "nome": "Como as pessoas se comunicam",
+          "skill": "EF03HI08",
+          "fatos": [
+            [
+              "Cartas escritas à mão levadas a cavalo ou de navio",
+              "Há muito tempo"
+            ],
+            [
+              "O telefone é inventado",
+              "1876"
+            ],
+            [
+              "Começam as transmissões de rádio no Brasil",
+              "1922"
+            ],
+            [
+              "Chega a televisão no Brasil",
+              "1950"
+            ],
+            [
+              "Os computadores começam a chegar às casas",
+              "Anos 1980"
+            ],
+            [
+              "O celular se espalha pelo Brasil",
+              "Anos 1990"
+            ],
+            [
+              "Celulares com tela de toque e internet ficam comuns",
+              "Anos 2010"
+            ]
+          ]
+        },
+        {
+          "nome": "Meios de transporte",
+          "skill": "EF03HI12",
+          "fatos": [
+            [
+              "Andar a pé e de canoa",
+              "Há milhares de anos"
+            ],
+            [
+              "Carroças puxadas por cavalos e bois",
+              "Há muitos séculos"
+            ],
+            [
+              "Trens a vapor sobre trilhos",
+              "Anos 1800"
+            ],
+            [
+              "Primeiro automóvel com motor a gasolina",
+              "1886"
+            ],
+            [
+              "Santos Dumont voa com o 14-Bis em Paris",
+              "1906"
+            ],
+            [
+              "Astronautas chegam à Lua",
+              "1969"
+            ]
+          ]
+        },
+        {
+          "nome": "A vida de uma criança",
+          "skill": "EF03HI02",
+          "fatos": [
+            [
+              "Nasce",
+              "Bebê"
+            ],
+            [
+              "Aprende a andar",
+              "Cerca de 1 ano"
+            ],
+            [
+              "Fala as primeiras frases",
+              "Cerca de 2 anos"
+            ],
+            [
+              "Vai para a educação infantil",
+              "4 e 5 anos"
+            ],
+            [
+              "Entra no 1º ano",
+              "6 anos"
+            ],
+            [
+              "Lê sozinha um livro",
+              "7 ou 8 anos"
+            ],
+            [
+              "Está no 3º ano",
+              "8 ou 9 anos"
+            ]
+          ]
+        }
+      ]
+    },
+    "ge": {
+      "tipo": "mapa",
+      "titulo": "Onde fica?",
+      "desc": "Toque no mapa onde fica o continente ou o país.",
+      "skill": "EF03GE06",
+      "niveis": [
+        {
+          "nome": "Continentes",
+          "regiao": "mundo",
+          "por": "continente",
+          "alvos": [
+            "am",
+            "eu",
+            "af",
+            "as",
+            "oc",
+            "an"
+          ]
+        },
+        {
+          "nome": "América do Sul",
+          "regiao": "america-do-sul",
+          "alvos": [
+            "076",
+            "032",
+            "152",
+            "858",
+            "600",
+            "068",
+            "604",
+            "218",
+            "170",
+            "862",
+            "328",
+            "740"
+          ]
+        },
+        {
+          "nome": "Países grandes do mundo",
+          "regiao": "mundo",
+          "alvos": [
+            "076",
+            "840",
+            "124",
+            "484",
+            "643",
+            "156",
+            "356",
+            "036",
+            "032",
+            "818",
+            "710",
+            "682",
+            "304",
+            "360"
+          ]
+        },
+        {
+          "nome": "Europa dos imigrantes",
+          "regiao": "europa",
+          "dica": "Muitos imigrantes que fundaram Joinville vieram da Alemanha, da Suíça e da Noruega.",
+          "alvos": [
+            "276",
+            "756",
+            "578",
+            "620",
+            "724",
+            "250",
+            "380",
+            "826",
+            "616",
+            "804",
+            "752"
+          ]
+        }
+      ]
+    },
+    "ar": {
+      "tipo": "pintor",
+      "titulo": "Quem pintou?",
+      "desc": "Veja a obra e descubra o artista.",
+      "skill": "EF15AR01",
+      "obras": [
+        {
+          "titulo": "A noite estrelada",
+          "pintor": "Vincent van Gogh",
+          "ano": "1889",
+          "img": "arte/van-gogh-noite-estrelada.jpg",
+          "curiosidade": "Van Gogh se inspirou na vista da janela do quarto onde estava internado, no sul da França.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "Os girassóis",
+          "pintor": "Vincent van Gogh",
+          "ano": "1888",
+          "img": "arte/van-gogh-girassois.jpg",
+          "curiosidade": "Van Gogh pintou vários quadros de girassóis para enfeitar o quarto de um amigo pintor.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:Vincent_Willem_van_Gogh_127.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "Mona Lisa",
+          "pintor": "Leonardo da Vinci",
+          "ano": "1503 a 1519",
+          "img": "arte/da-vinci-mona-lisa.jpg",
+          "curiosidade": "Fica no Museu do Louvre, em Paris, protegida por um vidro especial.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "Moça com brinco de pérola",
+          "pintor": "Johannes Vermeer",
+          "ano": "cerca de 1665",
+          "img": "arte/vermeer-moca-brinco-perola.jpg",
+          "curiosidade": "Vermeer, da Holanda, pintou poucas obras: hoje se conhecem só umas 35.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:1665_Girl_with_a_Pearl_Earring.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "A grande onda de Kanagawa",
+          "pintor": "Katsushika Hokusai",
+          "ano": "cerca de 1831",
+          "img": "arte/hokusai-grande-onda.jpg",
+          "curiosidade": "É uma gravura japonesa feita com blocos de madeira. Lá no fundo aparece o monte Fuji.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:Tsunami_by_hokusai_19th_century.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "O beijo",
+          "pintor": "Gustav Klimt",
+          "ano": "1907 e 1908",
+          "img": "arte/klimt-beijo.jpg",
+          "curiosidade": "Klimt, da Áustria, usou folhas de ouro de verdade nesta pintura.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "Impressão, nascer do sol",
+          "pintor": "Claude Monet",
+          "ano": "1872",
+          "img": "arte/monet-impressao.jpg",
+          "curiosidade": "O nome deste quadro deu origem ao Impressionismo, um jeito novo de pintar a luz.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:Monet_-_Impression,_Sunrise.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "Ninfeias",
+          "pintor": "Claude Monet",
+          "ano": "1906",
+          "img": "arte/monet-ninfeias.jpg",
+          "curiosidade": "Monet pintou as plantas do lago do seu jardim, na França, cerca de 250 vezes.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Water_Lilies_-_1906,_Ryerson.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "Uma tarde de domingo na ilha de La Grande Jatte",
+          "pintor": "Georges Seurat",
+          "ano": "1884 a 1886",
+          "img": "arte/seurat-tarde-domingo.jpg",
+          "curiosidade": "O quadro é feito de milhares de pontinhos de cor. Essa técnica se chama pontilhismo.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:A_Sunday_on_La_Grande_Jatte,_Georges_Seurat,_1884.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "Primeira Missa no Brasil",
+          "pintor": "Victor Meirelles",
+          "ano": "1860",
+          "img": "arte/meirelles-primeira-missa.jpg",
+          "curiosidade": "Victor Meirelles nasceu em Florianópolis, aqui em Santa Catarina.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:Meirelles-primeiramissa2.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "Independência ou Morte",
+          "pintor": "Pedro Américo",
+          "ano": "1888",
+          "img": "arte/pedro-americo-independencia.jpg",
+          "curiosidade": "Mostra Dom Pedro proclamando a independência do Brasil, em 1822, perto do riacho Ipiranga.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:Pedro_Américo_-_Independência_ou_Morte_-_Google_Art_Project.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        },
+        {
+          "titulo": "Caipira picando fumo",
+          "pintor": "Almeida Júnior",
+          "ano": "1893",
+          "img": "arte/almeida-junior-caipira.jpg",
+          "curiosidade": "Almeida Júnior nasceu em Itu, São Paulo, e gostava de pintar a vida simples do interior.",
+          "fonte": "https://commons.wikimedia.org/wiki/File:Almeida_Júnior_-_Caipira_Cutting_Tobacco_-_Google_Art_Project.jpg",
+          "licenca": "Domínio público (Wikimedia Commons)"
+        }
+      ],
+      "texto": [
+        [
+          "Qual artista brasileira pintou o Abaporu, em 1928, uma figura com pé e mão enormes?",
+          [
+            "Tarsila do Amaral",
+            "Anita Malfatti",
+            "Frida Kahlo",
+            "Lygia Clark"
+          ],
+          "O Abaporu é uma das obras mais famosas do modernismo brasileiro."
+        ],
+        [
+          "Qual pintor brasileiro pintou muitos trabalhadores do café e o grande painel Guerra e Paz, na sede da ONU?",
+          [
+            "Candido Portinari",
+            "Pedro Américo",
+            "Victor Meirelles",
+            "Almeida Júnior"
+          ],
+          "Portinari nasceu em Brodowski, no interior de São Paulo."
+        ],
+        [
+          "Qual artista brasileira pintou A Boba e escandalizou muita gente com suas cores fortes em 1917?",
+          [
+            "Anita Malfatti",
+            "Tarsila do Amaral",
+            "Djanira",
+            "Tomie Ohtake"
+          ],
+          "A exposição de Anita Malfatti ajudou a começar o modernismo no Brasil."
+        ],
+        [
+          "Alfredo Volpi ficou famoso por pintar muitas:",
+          [
+            "Bandeirinhas de festa junina",
+            "Naves espaciais",
+            "Paisagens de neve",
+            "Retratos de reis"
+          ],
+          "Volpi veio da Itália para o Brasil ainda bebê."
+        ]
+      ],
+      "pintores": [
+        "Vincent van Gogh",
+        "Leonardo da Vinci",
+        "Johannes Vermeer",
+        "Katsushika Hokusai",
+        "Gustav Klimt",
+        "Claude Monet",
+        "Georges Seurat",
+        "Victor Meirelles",
+        "Pedro Américo",
+        "Almeida Júnior",
+        "Pablo Picasso",
+        "Tarsila do Amaral",
+        "Michelangelo",
+        "Frida Kahlo"
+      ]
+    },
+    "ef": {
+      "tipo": "pistas",
+      "titulo": "Adivinha!",
+      "desc": "Leia as pistas e descubra a brincadeira, o jogo ou o esporte. Quanto menos pistas, mais pontos.",
+      "itens": [
+        {
+          "resposta": "Amarelinha",
+          "skill": "EF35EF01",
+          "pistas": [
+            "Desenha-se no chão com giz.",
+            "Tem casas numeradas e o céu no final.",
+            "Você pula num pé só."
+          ],
+          "erradas": [
+            "Pega-pega",
+            "Queimada",
+            "Cabo de guerra"
+          ]
+        },
+        {
+          "resposta": "Queimada",
+          "skill": "EF35EF01",
+          "pistas": [
+            "Joga-se em dois times.",
+            "Usa uma bola.",
+            "Quem é atingido pela bola vai para o cemitério."
+          ],
+          "erradas": [
+            "Futebol",
+            "Amarelinha",
+            "Esconde-esconde"
+          ]
+        },
+        {
+          "resposta": "Pega-pega",
+          "skill": "EF35EF01",
+          "pistas": [
+            "Não precisa de nenhum material.",
+            "Uma pessoa corre atrás das outras.",
+            "Quem é tocado passa a pegar."
+          ],
+          "erradas": [
+            "Pular corda",
+            "Bola de gude",
+            "Peteca"
+          ]
+        },
+        {
+          "resposta": "Pular corda",
+          "skill": "EF35EF01",
+          "pistas": [
+            "Duas pessoas podem bater.",
+            "Tem musiquinhas para cantar.",
+            "Você pula sem encostar no que gira."
+          ],
+          "erradas": [
+            "Amarelinha",
+            "Bambolê",
+            "Cabo de guerra"
+          ]
+        },
+        {
+          "resposta": "Cabo de guerra",
+          "skill": "EF35EF01",
+          "pistas": [
+            "Dois times ficam frente a frente.",
+            "Todos seguram a mesma corda.",
+            "Vence quem puxar o outro time para o seu lado."
+          ],
+          "erradas": [
+            "Pular corda",
+            "Queimada",
+            "Pega-pega"
+          ]
+        },
+        {
+          "resposta": "Peteca",
+          "skill": "EF35EF01",
+          "pistas": [
+            "Tem origem indígena.",
+            "Usa um objeto com penas.",
+            "Você bate com a palma da mão para não deixar cair."
+          ],
+          "erradas": [
+            "Pipa",
+            "Vôlei",
+            "Bola de gude"
+          ]
+        },
+        {
+          "resposta": "Pipa",
+          "skill": "EF35EF01",
+          "pistas": [
+            "Precisa de vento.",
+            "Tem rabiola e linha.",
+            "Nunca se usa cerol: é perigoso."
+          ],
+          "erradas": [
+            "Peteca",
+            "Balão",
+            "Bambolê"
+          ]
+        },
+        {
+          "resposta": "Jogo da onça",
+          "skill": "EF35EF01",
+          "pistas": [
+            "É um jogo de tabuleiro de origem indígena.",
+            "Uma peça é a onça e as outras são cachorros.",
+            "Os cachorros tentam cercar a onça."
+          ],
+          "erradas": [
+            "Xadrez",
+            "Dama",
+            "Dominó"
+          ]
+        },
+        {
+          "resposta": "Capoeira",
+          "skill": "EF35EF13",
+          "pistas": [
+            "Tem origem afro-brasileira.",
+            "Mistura luta, dança e música.",
+            "Usa berimbau e atabaque na roda."
+          ],
+          "erradas": [
+            "Judô",
+            "Balé",
+            "Ginástica"
+          ]
+        },
+        {
+          "resposta": "Ginástica",
+          "skill": "EF35EF07",
+          "pistas": [
+            "Tem estrela, rolamento e ponte.",
+            "Treina equilíbrio e força.",
+            "Pode usar arco, fita e bola."
+          ],
+          "erradas": [
+            "Capoeira",
+            "Natação",
+            "Basquete"
+          ]
+        },
+        {
+          "resposta": "Balé",
+          "skill": "EF35EF09",
+          "pistas": [
+            "É uma dança.",
+            "As bailarinas podem dançar na ponta dos pés.",
+            "Joinville tem a única filial da escola Bolshoi fora da Rússia."
+          ],
+          "erradas": [
+            "Capoeira",
+            "Samba",
+            "Judô"
+          ]
+        },
+        {
+          "resposta": "Vôlei",
+          "skill": "EF35EF05",
+          "pistas": [
+            "É um esporte de rede.",
+            "Cada time tem 6 jogadores na quadra.",
+            "Não pode deixar a bola cair no chão do seu lado."
+          ],
+          "erradas": [
+            "Futebol",
+            "Basquete",
+            "Handebol"
+          ]
+        },
+        {
+          "resposta": "Taco",
+          "skill": "EF35EF05",
+          "pistas": [
+            "É um jogo de campo e taco.",
+            "Joga-se em duplas.",
+            "Uma garrafa ou lata fica atrás de cada jogador."
+          ],
+          "erradas": [
+            "Vôlei",
+            "Tênis",
+            "Golfe"
+          ]
+        },
+        {
+          "resposta": "Futebol",
+          "skill": "EF35EF05",
+          "pistas": [
+            "É um esporte de invasão.",
+            "Cada time tem 11 jogadores.",
+            "Só o goleiro pode pegar a bola com a mão."
+          ],
+          "erradas": [
+            "Handebol",
+            "Basquete",
+            "Vôlei"
+          ]
+        }
+      ]
+    },
+    "li": {
+      "tipo": "ouvir",
+      "titulo": "Listen and pick",
+      "desc": "Ouça a palavra em inglês e escolha o que ela quer dizer.",
+      "grupos": [
+        {
+          "nome": "Greetings",
+          "itens": [
+            [
+              "hello",
+              "olá"
+            ],
+            [
+              "good morning",
+              "bom dia"
+            ],
+            [
+              "good night",
+              "boa noite"
+            ],
+            [
+              "goodbye",
+              "tchau"
+            ],
+            [
+              "thank you",
+              "obrigado"
+            ],
+            [
+              "please",
+              "por favor"
+            ]
+          ]
+        },
+        {
+          "nome": "School",
+          "itens": [
+            [
+              "pencil",
+              "lápis"
+            ],
+            [
+              "book",
+              "livro"
+            ],
+            [
+              "eraser",
+              "borracha"
+            ],
+            [
+              "ruler",
+              "régua"
+            ],
+            [
+              "backpack",
+              "mochila"
+            ],
+            [
+              "notebook",
+              "caderno"
+            ],
+            [
+              "scissors",
+              "tesoura"
+            ],
+            [
+              "glue",
+              "cola"
+            ]
+          ]
+        },
+        {
+          "nome": "Colors",
+          "itens": [
+            [
+              "red",
+              "vermelho"
+            ],
+            [
+              "blue",
+              "azul"
+            ],
+            [
+              "yellow",
+              "amarelo"
+            ],
+            [
+              "green",
+              "verde"
+            ],
+            [
+              "black",
+              "preto"
+            ],
+            [
+              "white",
+              "branco"
+            ],
+            [
+              "orange",
+              "laranja"
+            ],
+            [
+              "pink",
+              "rosa"
+            ],
+            [
+              "purple",
+              "roxo"
+            ],
+            [
+              "brown",
+              "marrom"
+            ]
+          ]
+        },
+        {
+          "nome": "Shapes",
+          "itens": [
+            [
+              "circle",
+              "círculo"
+            ],
+            [
+              "square",
+              "quadrado"
+            ],
+            [
+              "triangle",
+              "triângulo"
+            ],
+            [
+              "rectangle",
+              "retângulo"
+            ],
+            [
+              "star",
+              "estrela"
+            ],
+            [
+              "heart",
+              "coração"
+            ]
+          ]
+        },
+        {
+          "nome": "Family",
+          "itens": [
+            [
+              "mother",
+              "mãe"
+            ],
+            [
+              "father",
+              "pai"
+            ],
+            [
+              "sister",
+              "irmã"
+            ],
+            [
+              "brother",
+              "irmão"
+            ],
+            [
+              "grandmother",
+              "avó"
+            ],
+            [
+              "grandfather",
+              "avô"
+            ],
+            [
+              "baby",
+              "bebê"
+            ]
+          ]
+        },
+        {
+          "nome": "Pets",
+          "itens": [
+            [
+              "dog",
+              "cachorro"
+            ],
+            [
+              "cat",
+              "gato"
+            ],
+            [
+              "fish",
+              "peixe"
+            ],
+            [
+              "bird",
+              "pássaro"
+            ],
+            [
+              "rabbit",
+              "coelho"
+            ],
+            [
+              "turtle",
+              "tartaruga"
+            ],
+            [
+              "hamster",
+              "hamster"
+            ]
+          ]
+        },
+        {
+          "nome": "Numbers",
+          "itens": [
+            [
+              "one",
+              "um"
+            ],
+            [
+              "two",
+              "dois"
+            ],
+            [
+              "three",
+              "três"
+            ],
+            [
+              "four",
+              "quatro"
+            ],
+            [
+              "five",
+              "cinco"
+            ],
+            [
+              "six",
+              "seis"
+            ],
+            [
+              "seven",
+              "sete"
+            ],
+            [
+              "eight",
+              "oito"
+            ],
+            [
+              "nine",
+              "nove"
+            ],
+            [
+              "ten",
+              "dez"
+            ]
+          ]
+        },
+        {
+          "nome": "Toys",
+          "itens": [
+            [
+              "ball",
+              "bola"
+            ],
+            [
+              "doll",
+              "boneca"
+            ],
+            [
+              "kite",
+              "pipa"
+            ],
+            [
+              "car",
+              "carrinho"
+            ],
+            [
+              "teddy bear",
+              "ursinho de pelúcia"
+            ],
+            [
+              "puzzle",
+              "quebra-cabeça"
+            ],
+            [
+              "robot",
+              "robô"
+            ]
+          ]
+        },
+        {
+          "nome": "Fruits",
+          "itens": [
+            [
+              "apple",
+              "maçã"
+            ],
+            [
+              "banana",
+              "banana"
+            ],
+            [
+              "orange",
+              "laranja"
+            ],
+            [
+              "grape",
+              "uva"
+            ],
+            [
+              "strawberry",
+              "morango"
+            ],
+            [
+              "watermelon",
+              "melancia"
+            ],
+            [
+              "pineapple",
+              "abacaxi"
+            ],
+            [
+              "lemon",
+              "limão"
+            ]
+          ]
+        }
+      ]
+    },
+    "er": {
+      "tipo": "memoria",
+      "titulo": "Jogo da memória",
+      "desc": "Encontre os pares. Cada tradição tem seus espaços, festas e símbolos.",
+      "rodadas": [
+        {
+          "nome": "Espaços religiosos",
+          "skill": "EF03ER01",
+          "pares": [
+            [
+              "Igreja",
+              "Cristianismo"
+            ],
+            [
+              "Sinagoga",
+              "Judaísmo"
+            ],
+            [
+              "Mesquita",
+              "Islamismo"
+            ],
+            [
+              "Templo budista",
+              "Budismo"
+            ],
+            [
+              "Terreiro",
+              "Candomblé e Umbanda"
+            ],
+            [
+              "Opy, casa de reza",
+              "Povo Guarani"
+            ],
+            [
+              "Mandir",
+              "Hinduísmo"
+            ]
+          ]
+        },
+        {
+          "nome": "Festas e celebrações",
+          "skill": "EF03ER03",
+          "pares": [
+            [
+              "Natal",
+              "Nascimento de Jesus para os cristãos"
+            ],
+            [
+              "Páscoa",
+              "Ressurreição de Jesus para os cristãos"
+            ],
+            [
+              "Hanukkah",
+              "Candelabro de 9 velas dos judeus"
+            ],
+            [
+              "Ramadã",
+              "Mês de jejum dos muçulmanos"
+            ],
+            [
+              "Diwali",
+              "Lamparinas acesas pelos hindus"
+            ],
+            [
+              "Festa de Iemanjá",
+              "Oferendas no mar em 2 de fevereiro"
+            ],
+            [
+              "Vesak",
+              "Nascimento de Buda"
+            ]
+          ]
+        },
+        {
+          "nome": "Símbolos e roupas",
+          "skill": "EF03ER05",
+          "pares": [
+            [
+              "Cruz",
+              "Cristianismo"
+            ],
+            [
+              "Estrela de Davi",
+              "Judaísmo"
+            ],
+            [
+              "Lua crescente e estrela",
+              "Islamismo"
+            ],
+            [
+              "Roda do Dharma",
+              "Budismo"
+            ],
+            [
+              "Quipá",
+              "Pequeno chapéu usado por judeus"
+            ],
+            [
+              "Hijab",
+              "Lenço usado por muitas mulheres muçulmanas"
+            ],
+            [
+              "Fio de contas",
+              "Candomblé e Umbanda"
+            ],
+            [
+              "Om",
+              "Hinduísmo"
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

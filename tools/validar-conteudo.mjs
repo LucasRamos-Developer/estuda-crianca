@@ -69,6 +69,88 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort()
   }
 }
 
+// ---------- Mapa ----------
+const mapa = fs.existsSync(path.join(ROOT, 'data/mapas/mundo.json')) ? readJson('data/mapas/mundo.json') : null;
+if (mapa) {
+  if (!mapa.paises || !mapa.regioes || !mapa.continentes) err('data/mapas/mundo.json', 'faltam "paises", "regioes" ou "continentes" (gere com tools/gerar-mapa.mjs)');
+  else for (const [id, p] of Object.entries(mapa.paises)) if (!p.nome || !p.d || !mapa.continentes[p.cont]) err('data/mapas/mundo.json', `país ${id} incompleto`);
+}
+
+// ---------- Jogos por ano ----------
+const TIPOS = ['soletrando', 'mercadinho', 'classifica', 'linha', 'mapa', 'pintor', 'pistas', 'ouvir', 'memoria'];
+const skillOk = (rel, where, c) => { if (c && codes.size && !codes.has(c)) err(rel, `${where}: código BNCC inexistente ${c}`); };
+const list = (rel, where, v, min) => { if (!Array.isArray(v) || v.length < min) { err(rel, `${where}: precisa de pelo menos ${min} itens`); return false; } return true; };
+const jdir = path.join(ROOT, 'data/jogos');
+let nJogos = 0;
+for (const name of fs.existsSync(jdir) ? fs.readdirSync(jdir).filter((f) => f.endsWith('.json')).sort() : []) {
+  const rel = `data/jogos/${name}`;
+  const data = readJson(rel);
+  if (!data) continue;
+  const m = name.match(/^ano([1-9])\.json$/);
+  if (!m || data.ano !== Number(m[1])) err(rel, 'o nome deve ser anoN.json e "ano" deve ser N');
+  for (const [subj, g] of Object.entries(data.jogos || {})) {
+    const w = `${subj} (${g.tipo})`;
+    nJogos++;
+    if (!SUBJECTS.includes(subj)) err(rel, `matéria desconhecida "${subj}"`);
+    if (!TIPOS.includes(g.tipo)) { err(rel, `${w}: tipo deve ser um de ${TIPOS.join(', ')}`); continue; }
+    if (!g.titulo) err(rel, `${w}: falta "titulo"`);
+    skillOk(rel, w, g.skill);
+    (g.skills || []).forEach((c) => skillOk(rel, w, c));
+    if (g.tipo === 'soletrando' && list(rel, w, g.niveis, 1)) for (const n of g.niveis) {
+      skillOk(rel, w, n.skill);
+      if (list(rel, `${w} / ${n.nome}`, n.itens, 4)) for (const [p, f] of n.itens) if (!p || !f || !f.toLowerCase().includes(p.toLowerCase())) err(rel, `${w}: a frase precisa conter a palavra "${p}"`);
+    }
+    if (g.tipo === 'mercadinho' && list(rel, w, g.produtos, 4)) for (const [n, p] of g.produtos) if (!n || !Number.isInteger(p) || p < 1) err(rel, `${w}: produto "${n}" precisa de preço inteiro`);
+    if (g.tipo === 'classifica' && list(rel, w, g.rodadas, 1)) for (const r of g.rodadas) {
+      skillOk(rel, w, r.skill);
+      if (list(rel, `${w} / ${r.nome}`, r.caixas, 2) && list(rel, `${w} / ${r.nome}`, r.itens, 4)) for (const [n, c] of r.itens) if (!r.caixas.includes(c)) err(rel, `${w}: "${n}" está na caixa "${c}", que não existe`);
+    }
+    if (g.tipo === 'linha' && list(rel, w, g.rodadas, 1)) for (const r of g.rodadas) { skillOk(rel, w, r.skill); list(rel, `${w} / ${r.nome}`, r.fatos, 4); }
+    if (g.tipo === 'mapa' && list(rel, w, g.niveis, 1)) for (const n of g.niveis) {
+      if (mapa && !mapa.regioes[n.regiao]) err(rel, `${w}: região "${n.regiao}" não existe no mapa`);
+      if (list(rel, `${w} / ${n.nome}`, n.alvos, 3) && mapa) for (const a of n.alvos) if (!(n.por === 'continente' ? mapa.continentes[a] : mapa.paises[a])) err(rel, `${w}: alvo "${a}" não existe no mapa`);
+    }
+    if (g.tipo === 'pintor' && list(rel, w, g.obras, 4)) for (const o of g.obras) {
+      if (!o.pintor || !o.titulo || !o.img) err(rel, `${w}: obra precisa de "pintor", "titulo" e "img"`);
+      else if (!fs.existsSync(path.join(ROOT, 'data', o.img))) err(rel, `${w}: imagem data/${o.img} não encontrada`);
+      if (!o.licenca || !/^https:\/\//.test(o.fonte || '')) err(rel, `${w}: obra "${o.titulo}" precisa de "fonte" (https) e "licenca"`);
+    }
+    if (g.tipo === 'pistas' && list(rel, w, g.itens, 4)) for (const it of g.itens) {
+      skillOk(rel, w, it.skill);
+      if (!it.resposta || !Array.isArray(it.pistas) || !it.pistas.length || !Array.isArray(it.erradas) || it.erradas.length < 2) err(rel, `${w}: "${it.resposta}" precisa de pistas e 2+ erradas`);
+    }
+    if (g.tipo === 'ouvir' && list(rel, w, g.grupos, 1)) for (const gr of g.grupos) list(rel, `${w} / ${gr.nome}`, gr.itens, 4);
+    if (g.tipo === 'memoria' && list(rel, w, g.rodadas, 1)) for (const r of g.rodadas) { skillOk(rel, w, r.skill); list(rel, `${w} / ${r.nome}`, r.pares, 4); }
+  }
+}
+
+// ---------- Simulados por ano ----------
+const sdir = path.join(ROOT, 'data/simulados');
+let nSim = 0;
+for (const name of fs.existsSync(sdir) ? fs.readdirSync(sdir).filter((f) => f.endsWith('.json')).sort() : []) {
+  const rel = `data/simulados/${name}`;
+  const data = readJson(rel);
+  if (!data) continue;
+  const m = name.match(/^ano([1-9])\.json$/);
+  if (!m || data.ano !== Number(m[1])) err(rel, 'o nome deve ser anoN.json e "ano" deve ser N');
+  const sids = new Set();
+  for (const sim of data.simulados || []) {
+    nSim++;
+    if (!sim.id || sids.has(sim.id)) err(rel, `simulado sem id ou id repetido: ${sim.id}`);
+    sids.add(sim.id);
+    if (!sim.titulo) err(rel, `${sim.id}: falta "titulo"`);
+    for (const [subj, qs] of Object.entries(sim.questoes || {})) {
+      if (!SUBJECTS.includes(subj)) err(rel, `${sim.id}: matéria desconhecida "${subj}"`);
+      for (const [i, q] of (qs || []).entries()) {
+        const [text, opts, , skill] = q;
+        if (!text || !Array.isArray(opts) || opts.length < 3) err(rel, `${sim.id} / ${subj} ${i + 1}: use [enunciado, [certa, erradas...], explicação, habilidade]`);
+        else if (new Set(opts).size !== opts.length) err(rel, `${sim.id} / ${subj} ${i + 1}: alternativas repetidas`);
+        skillOk(rel, `${sim.id} / ${subj} ${i + 1}`, skill);
+      }
+    }
+  }
+}
+
 // ---------- Curiosidades ----------
 const cur = readJson('data/curiosidades.json');
 if (cur) {
@@ -82,5 +164,5 @@ if (cur) {
 
 for (const w of warns) console.log(`aviso  ${w}`);
 for (const e of errors) console.log(`ERRO   ${e}`);
-console.log(errors.length ? `\n${errors.length} erro(s). Corrija antes de publicar.` : `\nConteúdo OK (${codes.size} habilidades BNCC, ${ids.size} passos escritos).`);
+console.log(errors.length ? `\n${errors.length} erro(s). Corrija antes de publicar.` : `\nConteúdo OK (${codes.size} habilidades BNCC, ${ids.size} passos escritos, ${nJogos} jogos, ${nSim} simulados).`);
 process.exit(errors.length ? 1 : 0);
